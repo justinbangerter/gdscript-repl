@@ -106,6 +106,10 @@ var tokenize_params = [
 	[
 		'var ab = """cd""" + """ef"""',
 		[false, ['var', 'ab', '=', '"""cd"""', '+', '"""ef"""']]
+	],
+	[
+		'var test = """a"""',
+		[false, ['var', 'test', '=', '"""a"""']]
 	]
 ]
 

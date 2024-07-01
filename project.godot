@@ -10,7 +10,8 @@ config_version=5
 
 [application]
 
-config/name="godot-repl"
+config/name="gdscript-repl"
+config/description="Read Eval Print Loop for GDScript"
 run/main_scene="res://addons/repl/control.tscn"
 config/features=PackedStringArray("4.2", "GL Compatibility")
 config/icon="res://icon.svg"

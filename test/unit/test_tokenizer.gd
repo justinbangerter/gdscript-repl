@@ -1,6 +1,6 @@
 extends GutTest
 
-@onready var control := preload('res://addons/repl/control.gd').new()
+@onready var parser := preload('res://addons/repl/repl_parser.gd').new()
 
 func before_each():
 	pass
@@ -12,7 +12,7 @@ func before_all():
 	pass
 
 func after_all():
-	control.queue_free()
+	pass
 
 var tokenize_params = [
 	[
@@ -114,5 +114,5 @@ var tokenize_params = [
 ]
 
 func test_tokenize(params=use_parameters(tokenize_params)):
-	var tokens = control.tokenize(params[0])
+	var tokens = parser.tokenize(params[0])
 	assert_eq_deep(tokens, params[1])

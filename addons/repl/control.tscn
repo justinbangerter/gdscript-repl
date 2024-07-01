@@ -39,10 +39,6 @@ size_flags_horizontal = 3
 layout_mode = 2
 text = "Evaluate"
 
-[node name="ImportButton" type="Button" parent="VBoxContainer/HBoxContainer"]
-layout_mode = 2
-text = "Import"
-
 [connection signal="tree_exited" from="." to="." method="_on_tree_exited"]
 [connection signal="gui_input" from="VBoxContainer/HBoxContainer/InputLineEdit" to="." method="_on_input_line_edit_gui_input"]
 [connection signal="pressed" from="VBoxContainer/HBoxContainer/EvalButton" to="." method="_on_eval_button_pressed"]

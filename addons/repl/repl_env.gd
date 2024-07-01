@@ -951,7 +951,3 @@ func type_name(val):
 	if name == 'Object':
 		return val.get_class()
 	return name
-
-func _notification(event):
-	if event == NOTIFICATION_PREDELETE:
-		vars = null

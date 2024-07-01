@@ -35,7 +35,15 @@ var evaluate_params = [
 		],
 		[false, 'ab']
 	],
-	# Expression.evaluate() doesn't return triple quoted strings as strings >.>
+	# TODO: protect against double var declarations
+	#[
+		#[
+			#'var test = 3',
+			#'var test = 4',
+		#]
+		#[true, '(var test already declared)']
+	#],
+	# TODO: Expression.evaluate() doesn't return triple quoted strings as strings >.>
 	#[
 		#[
 			#'var test = """a"""',

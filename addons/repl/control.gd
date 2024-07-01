@@ -1,3 +1,4 @@
+@tool
 extends Control
 
 @onready var command_input := %InputLineEdit
@@ -37,22 +38,28 @@ func _ready():
 	command_input.grab_focus()
 
 
+func _on_tree_exited():
+	_history = []
+	_future = []
+	
+
+
 func evaluate_from_input():
 	command_output.add_text(command_input.text + '\n')
-	var result = evaluate(command_input.text, _env)
-	if result[0]:  # error
+	if command_input.text != '':
+		var result = evaluate(command_input.text, _env)
 		command_output.add_text(str(result[1]) + '\n')
-	else:
-		command_output.add_text(str(result[1]) + '\n')
-		_history.append(command_input.text)
-		command_input.clear()
+		if not result[0]:  # no errors
+			_history.append(command_input.text)
+			command_input.clear()
 	command_output.add_text('>>> ')
 	command_output.scroll_to_line(command_output.get_line_count())
 
 
 func tokenize(instruction: String) -> Array:
-	# Returns empty array on failure.
-	# So, check for blank instructions
+	## On failure, returns [true, "error message"]
+	## On success, returns [false, ['\t', '\t', 'list', 'of', 'tokens']]
+	
 	var error = false
 	var mode = ParserMode.EMPTY
 	var tokens:Array[String] = []
@@ -237,7 +244,7 @@ func tokenize(instruction: String) -> Array:
 
 
 func _delegate_evaluation(command: String, env: ReplEnv):
-	# Delegate command evaluation to godot
+	## Delegate command evaluation to godot
 	
 	# guarantee key/value order alignment
 	var env_keys = env.vars.keys()
@@ -351,10 +358,7 @@ func _on_input_line_edit_gui_input(event):
 			shift_input_stack(command_input, _future, _history)
 
 
-func _on_tree_exited():
-	_history = []
-	_future = []
-
-
 func _on_eval_button_pressed():
 	evaluate_from_input()
+
+

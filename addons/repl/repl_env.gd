@@ -942,7 +942,13 @@ var vars
 
 func _init(_vars={}):
 	vars = _vars
-	vars['ClassDB'] = ClassDB
+	# I tried to dynamically build the class dict from ClassDB, but moved on.
+	# To rebuild the list of classes:
+	# 1) uncomment the next line and save this file
+	# vars['ClassDB'] = ClassDB
+	# 2) call ClassDB.get_class_list() in editor to get source to rebuild dict
+	# 3) use a text editor to reformat the output (or write some code to do it)
+	# 4) paste it in and  comment out whatever the editor complains about
 	for base_class in base_classes:
 		vars[base_class] = base_classes[base_class]
 

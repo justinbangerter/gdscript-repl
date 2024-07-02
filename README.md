@@ -25,9 +25,10 @@ To help, you can
 * Submit issues to the github issue tracker.
 	* If it's a bug, include the steps you took to create the error
 	* Include what you expected to happen and what actually happened instead
-* Even better, write a unit test that illustrates the problem. See the `tests/` folder.
+* Even better, write a unit test that illustrates the problem.
 	* If you submit unit tests, leave them commented out if you haven't also fixed the problem.
-	* You can use the scripts under `scripts/` to run the unit tests.
+	* You can use the GUT plugin to run the tests.
+	* You can also use the scripts under `scripts/` to run the unit tests.
 * Submit pull requests.
 
 ## Licensing

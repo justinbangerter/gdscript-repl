@@ -51,6 +51,118 @@ var evaluate_params = [
 		],
 		[false, 'ab']
 	],
+	# TODO: if statement
+	#[
+		#[
+			#'var sum = 0',
+			#'if 3 > 1:',
+			#'	sum = 6',
+			#'sum'
+		#],
+		#[false, 6]
+	#],
+	# TODO: if statement
+	#[
+		#[
+			#'var sum = 0',
+			#'if 3 < 1:',
+			#'	sum = 6',
+			#'sum'
+		#],
+		#[false, 0]
+	#],
+	# TODO: elif
+	#[
+		#[
+			#'var sum = 0',
+			#'if 3 < 1:',
+			#'	sum = 6',
+			#'elif 3 > 2:
+			#'	sum = 5',
+			#'sum'
+		#],
+		#[false, 5]
+	#],
+	# TODO: else
+	#[
+		#[
+			#'var sum = 0',
+			#'if 3 < 1:',
+			#'	sum = 6',
+			#'else:
+			#'	sum = 4',
+			#'sum'
+		#],
+		#[false, 4]
+	#],
+	# TODO: if/elif/else
+	#[
+		#[
+			#'var sum = 0',
+			#'if 3 < 1:',
+			#'	sum = 6',
+			#'elif false:
+			#'	sum = 5',
+			#'else:',
+			#'	sum = 4',
+			#'sum'
+		#],
+		#[false, 4]
+	#],
+	# TODO: For loop with number
+	#[
+		#[
+			#'var sum = 0',
+			#'for num in 4:',
+			#'	sum += num',
+			#'sum'
+		#],
+		#[false, 6]
+	#],
+	# TODO: For loop with array
+	#[
+		#[
+			#'var sum = ""',
+			#'for num in ["a","b","c","d"]:',
+			#'	sum += num',
+			#'sum'
+		#],
+		#[false, 'abcd']
+	#],
+	# TODO: While loop
+	#[
+		#[
+			#'var sum = 0',
+			#'while sum < 3:',
+			#'	sum += 1',
+			#'sum'
+		#],
+		#[false, 2]
+	#],
+	# TODO: break
+	#[
+		#[
+			#'var sum = 0',
+			#'while true',
+			#'	sum += 1',
+			#'	break',
+			#'sum'
+		#],
+		#[false, 1]
+	#],
+	# TODO: continue
+	#[
+		#[
+			#'var sum = 0',
+			#'while true',
+			#'	sum += 1',
+			#'	if sum < 3:',
+			#'		continue',
+			#'	break',
+			#'sum'
+		#],
+		#[false, 2]
+	#],
 	# TODO: protect against double var declarations
 	#[
 		#[

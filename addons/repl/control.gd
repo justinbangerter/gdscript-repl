@@ -17,7 +17,6 @@ func _ready():
 func _on_tree_exited():
 	_history = []
 	_future = []
-	
 
 
 func evaluate_from_input():

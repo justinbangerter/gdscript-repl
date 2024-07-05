@@ -51,6 +51,26 @@ var evaluate_params = [
 		],
 		[false, 'ab']
 	],
+	[
+		[
+			'ClassDB.class_exists("ClassDB")'
+		],
+		[false, true]
+	],
+	# TODO: load enums from the base environment
+	#[
+		#[
+			#'OK'
+		#],
+		#[false, 0]
+	#],
+	# TODO: load enums from the base environment
+	#[
+		#[
+			#'TYPE_NIL'
+		#],
+		#[false, 0]
+	#],
 	# TODO: if statement
 	#[
 		#[

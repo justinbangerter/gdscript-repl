@@ -456,8 +456,11 @@ var vars
 
 func _init(_vars={}):
 	vars = _vars
+	# Load classes into environment
 	for clazz in ClassDB.get_class_list():
 		if clazz in vars:
+			continue
+		if not ClassDB.is_class_enabled(clazz):
 			continue
 		if clazz in forbidden_classes:
 			continue

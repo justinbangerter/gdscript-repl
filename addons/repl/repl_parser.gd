@@ -1,11 +1,125 @@
 class_name ReplParser
 extends Resource
-
 ## Handles parsing and evaluation of text
 
-const assignment_operators = [
-	'=', '+=', '-=', '*=', '/=', '**=', '%=', '&=', '|=', '^=', '<<=', '>>='
-]
+# https://github.com/godotengine/godot/blob/b97110cd307e4d78e20bfafe5de6c082194b2cd6/modules/gdscript/gdscript_tokenizer.cpp#L44
+const comparison_operators = {
+	"<": null, #LESS,
+	"<=": null, #LESS_EQUAL,
+	">": null, #GREATER,
+	">=": null, #GREATER_EQUAL,
+	"==": null, #EQUAL_EQUAL,
+	"!=": null, #BANG_EQUAL,
+}
+
+const logical_operators = {
+	"and": null, #AND,
+	"or": null, #OR,
+	"not": null, #NOT,
+	"&&": null, #AMPERSAND_AMPERSAND,
+	"||": null, #PIPE_PIPE,
+	"!": null, #BANG,
+}
+
+const bitwise_operators = {
+	"&": null, #AMPERSAND,
+	"|": null, #PIPE,
+	"~": null, #TILDE,
+	"^": null, #CARET,
+	"<<": null, #LESS_LESS,
+	">>": null, #GREATER_GREATER,
+}
+
+const math_operators = {
+	"+": null, #PLUS,
+	"-": null, #MINUS,
+	"*": null, #STAR,
+	"**": null, #STAR_STAR,
+	"/": null, #SLASH,
+	"%": null, #PERCENT,
+}
+
+const assignment_operators = {
+	"=": null, #EQUAL,
+	"+=": null, #PLUS_EQUAL,
+	"-=": null, #MINUS_EQUAL,
+	"*=": null, #STAR_EQUAL,
+	"**=": null, #STAR_STAR_EQUAL,
+	"/=": null, #SLASH_EQUAL,
+	"%=": null, #PERCENT_EQUAL,
+	"<<=": null, #LESS_LESS_EQUAL,
+	">>=": null, #GREATER_GREATER_EQUAL,
+	"&=": null, #AMPERSAND_EQUAL,
+	"|=": null, #PIPE_EQUAL,
+	"^=": null, #CARET_EQUAL,
+}
+
+const control_flow_names = {
+	"if": null, #IF,
+	"elif": null, #ELIF,
+	"else": null, #ELSE,
+	"for": null, #FOR,
+	"while": null, #WHILE,
+	"break": null, #BREAK,
+	"continue": null, #CONTINUE,
+	"pass": null, #PASS,
+	"return": null, #RETURN,
+	"match": null, #MATCH,
+	"when": null, #WHEN,
+}
+
+const keywords = {
+	"as": null, #AS,
+	"assert": null, #ASSERT,
+	"await": null, #AWAIT,
+	"breakpoint": null, #BREAKPOINT,
+	"class": null, #CLASS,
+	"class_name": null, #CLASS_NAME,
+	"const": null, #CONST,
+	"enum": null, #ENUM,
+	"extends": null, #EXTENDS,
+	"func": null, #FUNC,
+	"in": null, #IN,
+	"is": null, #IS,
+	"namespace": null, #NAMESPACE
+	"preload": null, #PRELOAD,
+	"self": null, #SELF,
+	"signal": null, #SIGNAL,
+	"static": null, #STATIC,
+	"super": null, #SUPER,
+	"trait": null, #TRAIT,
+	"var": null, #VAR,
+	"void": null, #VOID,
+	"yield": null, #YIELD,
+}
+
+const punctuation = {
+	"[": null, #BRACKET_OPEN,
+	"]": null, #BRACKET_CLOSE,
+	"{": null, #BRACE_OPEN,
+	"}": null, #BRACE_CLOSE,
+	"(": null, #PARENTHESIS_OPEN,
+	")": null, #PARENTHESIS_CLOSE,
+	",": null, #COMMA,
+	";": null, #SEMICOLON,
+	".": null, #PERIOD,
+	"..": null, #PERIOD_PERIOD,
+	":": null, #COLON,
+	"$": null, #DOLLAR,
+	"->": null, #FORWARD_ARROW,
+	"_": null, #UNDERSCORE,
+}
+
+# https://github.com/godotengine/godot/blob/b97110cd307e4d78e20bfafe5de6c082194b2cd6/modules/gdscript/gdscript_tokenizer.cpp#L44
+# The NaN value has been changed to match line 543 of the same file.
+const constants = {
+	"PI": null, #CONST_PI,
+	"TAU": null, #CONST_TAU,
+	"INF": null, #CONST_INF,
+	"NAN": null, #CONST_NAN,
+}
+
+
 const whitespace_chars = ' \t\r'  # newline handled as special case
 const number_chars = '1234567890.'
 const operator_chars = '!=<>:+-*/'
@@ -33,6 +147,8 @@ enum EvalMode {
 	ASSIGN_VAR = 2,
 }
 
+var word_regex = RegEx.create_from_string("[a-zA-Z_][a-zA-Z_0-9]*")
+
 
 func tokenize(instruction: String) -> Array:
 	## On failure, returns [true, "error message"]
@@ -43,9 +159,6 @@ func tokenize(instruction: String) -> Array:
 	var mode = ParseMode.EMPTY
 	var tokens:Array[String] = []
 	var token = ''
-	
-	var word_regex = RegEx.new()
-	word_regex.compile("[a-zA-Z_][a-zA-Z_0-9]*")
 
 	var index = 0
 	while index < instruction.length():

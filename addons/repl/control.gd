@@ -3,6 +3,7 @@ extends Control
 
 @onready var command_input := %InputLineEdit
 @onready var command_output := %OutputRichLabel
+@onready var path_dialog := $PathFileDialog
 
 @onready var _env := ReplEnv.new()
 @onready var _parser := ReplParser.new()
@@ -56,3 +57,20 @@ func _on_input_line_edit_gui_input(event):
 
 func _on_eval_button_pressed():
 	evaluate_from_input()
+
+
+func _on_path_button_pressed():
+	path_dialog.popup_centered(Vector2i(400, 600))
+
+
+func _on_path_file_dialog_file_selected(path):
+	paste_path(path)
+
+
+func _on_path_file_dialog_dir_selected(dir):
+	paste_path(dir)
+
+
+func paste_path(path):
+	command_input.insert_text_at_caret(path)
+	command_input.grab_focus()

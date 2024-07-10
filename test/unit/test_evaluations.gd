@@ -206,6 +206,7 @@ var evaluate_params = [
 		#],
 		#[true, 'attempted assignment to uninitialized variable `uninitialized_variable` (use var)']
 	#]
+	# TODO: write tests for all the new functions in the main environment
 ]
 
 func test_evaluate(params=use_parameters(evaluate_params)):

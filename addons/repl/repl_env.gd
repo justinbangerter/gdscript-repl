@@ -486,3 +486,41 @@ func eval_label(label:String):
 		var msg = "Identifier '%s' not declared in the current scope." % label
 		result = [true, msg]
 	return result
+
+
+func char(char):
+	return char(char)
+
+func convert(what, type):
+	return convert(what, type)
+
+func dict_to_inst(dictionary):
+	return dict_to_inst(dictionary)
+
+func get_stack():
+	return get_stack()
+
+func inst_to_dict(instance):
+	return inst_to_dict(instance)
+
+func is_instance_of(value, type):
+	return is_instance_of(value, type)
+
+func len(variant):
+	return len(variant)
+
+func load(path):
+	return load(path)
+
+func print_stack():
+	print_stack()
+
+func range(a, b=null, c=null):
+	if b == null:
+		return range(a)
+	if c == null:
+		return range(a, b)
+	return range(a, b, c)
+
+func type_exists(type):
+	return type_exists(type)

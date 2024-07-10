@@ -41,6 +41,19 @@ size_flags_horizontal = 3
 layout_mode = 2
 text = "Evaluate"
 
-[connection signal="tree_exited" from="." to="." method="_on_tree_exited"]
+[node name="PathButton" type="Button" parent="VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "File"
+
+[node name="PathFileDialog" type="FileDialog" parent="."]
+title = "Open a File or Directory"
+size = Vector2i(392, 159)
+ok_button_text = "Paste File"
+dialog_hide_on_ok = true
+file_mode = 3
+
 [connection signal="gui_input" from="VBoxContainer/HBoxContainer/InputLineEdit" to="." method="_on_input_line_edit_gui_input"]
 [connection signal="pressed" from="VBoxContainer/HBoxContainer/EvalButton" to="." method="_on_eval_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/HBoxContainer/PathButton" to="." method="_on_path_button_pressed"]
+[connection signal="dir_selected" from="PathFileDialog" to="." method="_on_path_file_dialog_dir_selected"]
+[connection signal="file_selected" from="PathFileDialog" to="." method="_on_path_file_dialog_file_selected"]

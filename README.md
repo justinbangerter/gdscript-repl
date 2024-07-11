@@ -1,6 +1,10 @@
+![Icon that resembles a terminal prompt](icon.png)
+
 # Read Eval Print Loop for GDScript
 
 A Godot plugin that provides a tab in the Godot editor, which enables interactive code execution.
+
+![Image with example output from terminal](docs/example-1.png)
 
 ## Installation
 Refer to the [Godot documentation for installing a plugin](https://docs.godotengine.org/en/stable/tutorials/plugins/editor/installing_plugins.html).

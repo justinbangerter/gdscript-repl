@@ -57,6 +57,18 @@ var evaluate_params = [
 		],
 		[false, true]
 	],
+	[
+		[
+			'var x = load("res://icon.svg")'
+		],
+		[false, "Variable assigned"]
+	],
+	[
+		[
+			'range(0, 10, 2)'
+		],
+		[false, [0, 2, 4, 6, 8]]
+	],
 	# TODO: load enums from the base environment
 	#[
 		#[

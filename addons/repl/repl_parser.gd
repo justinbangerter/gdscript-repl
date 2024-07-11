@@ -6,26 +6,6 @@ extends Resource
 const assignment_operators = [
 	'=', '+=', '-=', '*=', '/=', '**=', '%=', '&=', '|=', '^=', '<<=', '>>='
 ]
-const whitespace_chars = ' \t\r'  # newline handled as special case
-const number_chars = '1234567890.'
-const operator_chars = '!=<>:+-*/'
-const bracket_chars = '()[]{}'
-
-enum ParseMode {
-	EMPTY = 0,
-	NEWLINE = 1,
-	LEADING_WHITESPACE = 2,
-	INNER_WHITESPACE = 3,
-	WORD = 4,
-	NUMBER = 5,
-	OPERATOR = 6,
-	BRACKET = 7,
-	STRING_SQ = 8,  # single quote
-	STRING_DQ = 9,  # double quote
-	STRING_TSQ = 10,  # triple single quote
-	STRING_TDQ = 11,  # triple double quote
-	END_STRING = 12,
-}
 
 enum EvalMode {
 	OPEN = 0,
@@ -33,193 +13,203 @@ enum EvalMode {
 	ASSIGN_VAR = 2,
 }
 
+func msg_error_at(instruction, index):
+	## Get a message that says there's an error in the instruction at the given index
+	## the message will have the line and column number
+	var line = 1
+	var char = 1
+	var i = 0
+	while i < index:
+		if instruction[i] in '\r\n':
+			line += 1
+			char = 1
+		else:
+			char += 1
+		i += 1
+	return ('Error at (%s, %s)' % [line, char])
+			
+
 
 func tokenize(instruction: String) -> Array:
 	## On failure, returns [true, "error message"]
 	## On success, returns [false, ['\t', '\t', 'list', 'of', 'tokens']]
 	## Leading whitespace is preserved, but inner whitespace is discarded
-	
-	var error = false
-	var mode = ParseMode.EMPTY
 	var tokens:Array[String] = []
-	var token = ''
 	
-	var word_regex = RegEx.new()
-	word_regex.compile("[a-zA-Z_][a-zA-Z_0-9]*")
+	var alphabetical = RegEx.create_from_string("[a-zA-Z]")
+	var word_start_chars = RegEx.create_from_string("[a-zA-Z_]")
+	var word_end_chars = RegEx.create_from_string("[a-zA-Z_0-9]")
 
 	var index = 0
 	while index < instruction.length():
-		if mode == ParseMode.EMPTY:
-			token += instruction[index]
-		elif mode == ParseMode.NEWLINE:
-			tokens.append(token)
-			token = instruction[index]
-		elif mode == ParseMode.LEADING_WHITESPACE:
-			tokens.append(token)
-			token = instruction[index]
-		elif mode == ParseMode.INNER_WHITESPACE:
-			if instruction[index] not in whitespace_chars:
-				token = instruction[index]
-		elif mode == ParseMode.NUMBER:
-			if instruction[index] in number_chars:
-				token += instruction[index]
-			elif word_regex.search(instruction[index]):
-				token += instruction[index]
-				error = true
-			else:
-				tokens.append(token)
-				token = instruction[index]
-		elif mode == ParseMode.WORD:
-			if instruction[index] in number_chars or word_regex.search(instruction[index]):
-				token += instruction[index]
-			else:
-				tokens.append(token)
-				token = instruction[index]
-		elif mode == ParseMode.OPERATOR:
-			if token.length() > 1:
-				tokens.append(token)
-				token = instruction[index]
-			elif instruction[index] in operator_chars:
-				token += instruction[index]
-			else:
-				tokens.append(token)
-				token = instruction[index]
-		elif mode == ParseMode.BRACKET:
-			tokens.append(token)
-			token = instruction[index]
-		elif mode == ParseMode.STRING_SQ:
-			token += instruction[index]
+		if word_start_chars.search(instruction[index]):
+			var token = instruction[index]
 			index += 1
-			while index < instruction.length() and instruction[index] != "'":
-				if instruction[index] == '\\':
+			while index < instruction.length() and word_end_chars.search(instruction[index]):
+				token += instruction[index]
+				index += 1
+			tokens.append(token)
+		elif index < instruction.length() and instruction[index] in '1234567890.':
+			var token = instruction[index]
+			index += 1
+			if token == '0' and index < instruction.length() and instruction[index] == 'b':
+				token += instruction[index]
+				index += 1
+				while index < instruction.length() and instruction[index] in '01':
 					token += instruction[index]
 					index += 1
+				if index < instruction.length() and alphabetical.search(instruction[index]):
+					return [
+						true,
+						msg_error_at(instruction, index) + ': Invalid numeric notation.'
+					]
+				tokens.append(token)
+			elif token == '0' and index < instruction.length() and instruction[index] == 'x':
 				token += instruction[index]
 				index += 1
-			if index < instruction.length() and instruction[index] == "'":
-				token += instruction[index]
-				index += 1
-				mode = ParseMode.END_STRING
-			if mode == ParseMode.STRING_SQ:
-				return [true, "Unterminated single quote"]
-			tokens.append(token)
-			token = ''
-		elif mode == ParseMode.STRING_DQ:
-			token += instruction[index]
-			index += 1
-			while index < instruction.length() and instruction[index] != '"':
-				if instruction[index] == '\\':
+				while index < instruction.length() and instruction[index] in '01234567890abcdefABCDEF':
 					token += instruction[index]
 					index += 1
-				token += instruction[index]
-				index += 1
-			if index < instruction.length() and instruction[index] == '"':
-				token += instruction[index]
-				index += 1
-				mode = ParseMode.END_STRING
-			if mode == ParseMode.STRING_DQ:
-				return [true, "Unterminated double quote"]
-			tokens.append(token)
-			token = ''
-		elif mode == ParseMode.STRING_TSQ:
-			token += instruction[index]
-			index += 1
-			token += instruction[index]
-			index += 1
-			token += instruction[index]
-			index += 1
-			while index + 2 < instruction.length() and instruction.substr(index, 3) != "'''":
-				if instruction[index] == '\\':
-					token += instruction[index]
-					index += 1
-				token += instruction[index]
-				index += 1
-			if index + 2 < instruction.length() and instruction.substr(index, 3) == "'''":
-				token += "'''"
-				index += 3
-				mode = ParseMode.END_STRING
-			if mode == ParseMode.STRING_TSQ:
-				return [true, "Unterminated triple single quote"]
-			tokens.append(token)
-			token = ''
-		elif mode == ParseMode.STRING_TDQ:
-			token += instruction[index]
-			index += 1
-			token += instruction[index]
-			index += 1
-			token += instruction[index]
-			index += 1
-			while index + 2 < instruction.length() and instruction.substr(index, 3) != '"""':
-				if instruction[index] == '\\':
-					token += instruction[index]
-					index += 1
-				token += instruction[index]
-				index += 1
-			if index + 2 < instruction.length() and instruction.substr(index, 3) == '"""':
-				token += '"""'
-				index += 3
-				mode = ParseMode.END_STRING
-			if mode == ParseMode.STRING_TDQ:
-				return [true, "Unterminated triple double quote"]
-			tokens.append(token)
-			token = ''
-		else:
-			assert(false, "Unhandled parser mode: " + str(mode))
-		
-		if index >= instruction.length():
-			break
-		
-		if instruction[index] in whitespace_chars:
-			if mode == ParseMode.NEWLINE:
-				mode = ParseMode.LEADING_WHITESPACE
-			elif mode == ParseMode.LEADING_WHITESPACE:
-				mode = ParseMode.LEADING_WHITESPACE
-			elif mode == ParseMode.EMPTY:
-				mode = ParseMode.LEADING_WHITESPACE
+				if index < instruction.length() and alphabetical.search(instruction[index]):
+					return [
+						true,
+						msg_error_at(instruction, index) + ': Invalid numeric notation.'
+					]
+				tokens.append(token)
 			else:
-				mode = ParseMode.INNER_WHITESPACE
-		elif word_regex.search(instruction[index]):
-			mode = ParseMode.WORD
-		elif instruction[index] in number_chars:
-			if mode == ParseMode.WORD:
-				mode = ParseMode.WORD
-			else:
-				mode = ParseMode.NUMBER
-		elif instruction[index] in operator_chars:
-			mode = ParseMode.OPERATOR
-		elif instruction[index] in bracket_chars:
-			mode = ParseMode.BRACKET
-		elif instruction[index] == '\n':
-			mode = ParseMode.NEWLINE
+				var e_ct = 0
+				while index < instruction.length() and instruction[index] in '1234567890.E':
+					if instruction[index] == 'E':
+						e_ct += 1
+					token += instruction[index]
+					index += 1
+				if index < instruction.length() and alphabetical.search(instruction[index]):
+					return [
+						true,
+						msg_error_at(instruction, index) + ': Invalid numeric notation.'
+					]
+				if e_ct > 1:
+					return [false, "Too many E's in " + token ]
+				tokens.append(token)
+				
+		elif instruction[index] in '*<>':
+			# could be *, *=, or **=
+			# or >, >=, or >>=
+			# or <, <=, or <<=
+			var token = instruction[index]
+			index += 1
+			if index < instruction.length() and instruction[index] == token:
+				token += instruction[index]
+				index += 1
+			if index < instruction.length() and instruction[index] == '=':
+				token += instruction[index]
+				index += 1
+			tokens.append(token)
+		elif instruction[index] in '|&':
+			var token = instruction[index]
+			index += 1
+			if index < instruction.length() and instruction[index] == token:
+				token += instruction[index]
+				index += 1
+			elif index < instruction.length() and instruction[index] == '=':
+				token += instruction[index]
+				index += 1
+			tokens.append(token)
+		elif instruction[index] in '!+-/%^=':
+			# could be ! or !=
+			var token = instruction[index]
+			index += 1
+			if index < instruction.length() and instruction[index] == '=':
+				token += instruction[index]
+				index += 1
+			tokens.append(token)
+		elif instruction[index] in ':()[]{} \t\r\n':
+			tokens.append(instruction[index])
+			index += 1
 		elif instruction[index] == "'":
 			if index + 2 < instruction.length() and instruction.substr(index, 3) == "'''":
-				mode = ParseMode.STRING_TSQ
+				# triple single quoted string
+				var token = "'''"
+				index += 3
+				while index + 2 < instruction.length() and instruction.substr(index, 3) != "'''":
+					if instruction[index] == '\\':
+						token += instruction[index]
+						index += 1
+					token += instruction[index]
+					index += 1
+				token += "'''"
+				index += 3
+				tokens.append(token)
 			else:
-				mode = ParseMode.STRING_SQ
+				# normal single quoted string
+				var token = instruction[index]
+				index += 1
+				while index < instruction.length() and instruction[index] != "'":
+					if instruction[index] == '\\':
+						token += instruction[index]
+						index += 1
+					token += instruction[index]
+					index += 1
+				token += instruction[index]
+				index += 1
+				tokens.append(token)
 		elif instruction[index] == '"':
 			if index + 2 < instruction.length() and instruction.substr(index, 3) == '"""':
-				mode = ParseMode.STRING_TDQ
+				# triple double quoted string
+				var token = '"""'
+				index += 3
+				while index + 2 < instruction.length() and instruction.substr(index, 3) != '"""':
+					if instruction[index] == '\\':
+						token += instruction[index]
+						index += 1
+					token += instruction[index]
+					index += 1
+				token += '"""'
+				index += 3
+				tokens.append(token)
 			else:
-				mode = ParseMode.STRING_DQ
+				# normal double quoted string
+				var token = instruction[index]
+				index += 1
+				while index < instruction.length() and instruction[index] != '"':
+					if instruction[index] == '\\':
+						token += instruction[index]
+						index += 1
+					token += instruction[index]
+					index += 1
+				token += instruction[index]
+				index += 1
+				tokens.append(token)
 		else:
-			var err = """failed to detect mode:
+			var err = """failed to parse:
 				tokens: {tokens}
-				token_in_progress: {token}
 				character: {character}
 				instruction: {instruction}
 			""".format({
 				'tokens': tokens,
-				'token': token,
 				'character': instruction[index],
 				'instruction': instruction,
 			})
-			assert(false, err)
-		index += 1
+			return [true, err]
+	
+	var final_tokens = []
+	var is_leading_whitespace = true
+	for token in tokens:
+		var is_newline = token in '\r\n'
+		var is_whitespace = token in ' \t'
 		
-	if token != '':
-		tokens.append(token)
-		token = ''
-	return [error, tokens]
+		if is_leading_whitespace:
+			if not is_whitespace and not is_newline:
+				is_leading_whitespace = false
+			final_tokens.append(token)
+		else:
+			if is_newline:
+				is_leading_whitespace = true
+			if is_whitespace:
+				continue
+			final_tokens.append(token)
+	
+	return [false, final_tokens]
 
 
 func _delegate_evaluation(command: String, env: ReplEnv):

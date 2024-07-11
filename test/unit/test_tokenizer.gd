@@ -57,7 +57,7 @@ var tokenize_params = [
 	],
 	[
 		'84asdf',
-		[true, ['84asdf']]
+		[true, 'Error at (1, 3): Invalid numeric notation.']
 	],
 	[
 		'',
@@ -66,6 +66,26 @@ var tokenize_params = [
 	[
 		'\n',
 		[false, ['\n']]
+	],
+	[
+		'true && true',
+		[false, ['true', '&&', 'true']]
+	],
+	[
+		'false || true',
+		[false, ['false', '||', 'true']]
+	],
+	[
+		'!false',
+		[false, ['!', 'false']]
+	],
+	[
+		'a |= true',
+		[false, ['a', '|=', 'true']]
+	],
+	[
+		'a &= true',
+		[false, ['a', '&=', 'true']]
 	],
 	[
 		"var ab = 'cd'",
@@ -110,6 +130,30 @@ var tokenize_params = [
 	[
 		'var test = """a"""',
 		[false, ['var', 'test', '=', '"""a"""']]
+	],
+	[
+		'var x = load("res://icon.svg")',
+		[false, ['var', 'x', '=', 'load', '(', '"res://icon.svg"', ')']]
+	],
+	[
+		'0b010101',
+		[false, ['0b010101']]
+	],
+	[
+		'0xDEADBEEF',
+		[false, ['0xDEADBEEF']]
+	],
+	[
+		'0',
+		[false, ['0']]
+	],
+	[
+		'0E10',
+		[false, ['0E10']]
+	],
+	[
+		'var x = 0',
+		[false, ['var', 'x', '=', '0']]
 	]
 ]
 

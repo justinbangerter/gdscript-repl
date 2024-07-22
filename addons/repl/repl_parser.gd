@@ -123,8 +123,9 @@ func tokenize(instruction: String) -> Array:
 				token += instruction[index]
 				index += 1
 			tokens.append(token)
-		elif instruction[index] in ':()[]{} \t\r\n':
-			tokens.append(instruction[index])
+		elif instruction[index] in ':()[]{} \t\r\n,':
+			var token = instruction[index]
+			tokens.append(token)
 			index += 1
 		elif instruction[index] == "'":
 			if index + 2 < instruction.length() and instruction.substr(index, 3) == "'''":

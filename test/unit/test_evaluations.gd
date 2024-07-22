@@ -69,6 +69,13 @@ var evaluate_params = [
 		],
 		[false, [0, 2, 4, 6, 8]]
 	],
+	[
+		[
+			'var x = [1, 2, 3]',
+			'x'
+		],
+		[false, [1, 2, 3]]
+	]
 	# TODO: load enums from the base environment
 	#[
 		#[

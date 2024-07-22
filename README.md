@@ -9,6 +9,7 @@ A Godot plugin that provides a tab in the Godot editor, which enables interactiv
 ## Usage
 * Type commands into the bar then click `Evaluate` or tap the `enter` key
 * Tap up or down to browse your command history
+* You can insert file paths by clicking `File`, navigating to a file (or directory), and clicking `Open`
 
 ## Installation
 Refer to the [Godot documentation for installing a plugin](https://docs.godotengine.org/en/stable/tutorials/plugins/editor/installing_plugins.html).

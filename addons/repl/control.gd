@@ -25,9 +25,8 @@ func evaluate_from_input():
 	if command_input.text != '':
 		var result = _parser.evaluate(command_input.text, _env)
 		command_output.add_text(str(result[1]) + '\n')
-		if not result[0]:  # no errors
-			_history.append(command_input.text)
-			command_input.clear()
+		_history.append(command_input.text)
+		command_input.clear()
 	command_output.add_text('>>> ')
 	command_output.scroll_to_line(command_output.get_line_count())
 

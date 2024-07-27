@@ -76,6 +76,9 @@ func tokenize(instruction: String) -> Array:
 						msg_error_at(instruction, index) + ': Invalid numeric notation.'
 					]
 				tokens.append(token)
+			elif token == '.' and index < instruction.length() and word_start_chars.search(instruction[index]):
+				# found a period, but it's a method invocation
+				tokens.append(token)
 			else:
 				var e_ct = 0
 				while index < instruction.length() and instruction[index] in '1234567890.E':

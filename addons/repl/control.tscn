@@ -47,7 +47,7 @@ text = "File"
 
 [node name="PathFileDialog" type="FileDialog" parent="."]
 title = "Open a File or Directory"
-size = Vector2i(392, 159)
+size = Vector2i(392, 175)
 ok_button_text = "Open"
 dialog_hide_on_ok = true
 file_mode = 3

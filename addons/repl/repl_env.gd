@@ -54,6 +54,7 @@ const forbidden_classes = {
 	'SceneReplicationInterface': null,
 	'SceneRPCInterface': null,
 	'ThemeContext': null,
+	
 	## these classes create parse errors on plugin load.
 	"AbstractPolygon2DEditor": null,
 	"AbstractPolygon2DEditorPlugin": null,
@@ -447,6 +448,30 @@ const forbidden_classes = {
 	"VoxelGIEditorPlugin": null,
 	"VoxelGIGizmoPlugin": null,
 	"WindowWrapper": null,
+	
+	# Godot 4.3
+	"AudioStreamImportSettingsDialog": null,
+	"AudioStreamInteractiveEditorPlugin": null,
+	"AudioStreamInteractiveTransitionEditor": null,
+	"AudioStreamPlayerInternal": null,
+	"DockContextPopup": null,
+	"DockSplitContainer": null,
+	"DynamicFontImportSettingsDialog": null,
+	"EditorAudioStreamTooltipPlugin": null,
+	"EditorBottomPanel": null,
+	"EditorDockManager": null,
+	"EditorInspectorParticleProcessMaterialPlugin": null,
+	"EditorInspectorPluginAudioStreamInteractive": null,
+	"EditorSceneExporterGLTFSettings": null,
+	"GeometryInstance3DGizmoPlugin": null,
+	"GroupSettingsEditor": null,
+	"ParallaxBackgroundEditorPlugin": null,
+	"RunInstancesDialog": null,
+	"SceneImportSettingsDialog": null,
+	"TileMapLayerEditor": null,
+	"TileMapLayerEditorTerrainsPlugin": null,
+	"TileMapLayerEditorTilesPlugin": null,
+	"UVEditDialog": null,
 }
 
 # handles eval calls

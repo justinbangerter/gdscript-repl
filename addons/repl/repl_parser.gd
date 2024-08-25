@@ -13,209 +13,6 @@ enum EvalMode {
 	ASSIGN_VAR = 2,
 }
 
-func msg_error_at(instruction, index):
-	## Get a message that says there's an error in the instruction at the given index
-	## the message will have the line and column number
-	var line = 1
-	var char = 1
-	var i = 0
-	while i < index:
-		if instruction[i] in '\r\n':
-			line += 1
-			char = 1
-		else:
-			char += 1
-		i += 1
-	return ('Error at (%s, %s)' % [line, char])
-			
-
-
-func tokenize(instruction: String) -> Array:
-	## On failure, returns [true, "error message"]
-	## On success, returns [false, ['\t', '\t', 'list', 'of', 'tokens']]
-	## Leading whitespace is preserved, but inner whitespace is discarded
-	var tokens:Array[String] = []
-	
-	var alphabetical = RegEx.create_from_string("[a-zA-Z]")
-	var word_start_chars = RegEx.create_from_string("[a-zA-Z_]")
-	var word_end_chars = RegEx.create_from_string("[a-zA-Z_0-9]")
-
-	var index = 0
-	while index < instruction.length():
-		if word_start_chars.search(instruction[index]):
-			var token = instruction[index]
-			index += 1
-			while index < instruction.length() and word_end_chars.search(instruction[index]):
-				token += instruction[index]
-				index += 1
-			tokens.append(token)
-		elif index < instruction.length() and instruction[index] in '1234567890.':
-			var token = instruction[index]
-			index += 1
-			if token == '0' and index < instruction.length() and instruction[index] == 'b':
-				token += instruction[index]
-				index += 1
-				while index < instruction.length() and instruction[index] in '01':
-					token += instruction[index]
-					index += 1
-				if index < instruction.length() and alphabetical.search(instruction[index]):
-					return [
-						true,
-						msg_error_at(instruction, index) + ': Invalid numeric notation.'
-					]
-				tokens.append(token)
-			elif token == '0' and index < instruction.length() and instruction[index] == 'x':
-				token += instruction[index]
-				index += 1
-				while index < instruction.length() and instruction[index] in '01234567890abcdefABCDEF':
-					token += instruction[index]
-					index += 1
-				if index < instruction.length() and alphabetical.search(instruction[index]):
-					return [
-						true,
-						msg_error_at(instruction, index) + ': Invalid numeric notation.'
-					]
-				tokens.append(token)
-			elif token == '.' and index < instruction.length() and word_start_chars.search(instruction[index]):
-				# found a period, but it's a method invocation
-				tokens.append(token)
-			else:
-				var e_ct = 0
-				while index < instruction.length() and instruction[index] in '1234567890.E':
-					if instruction[index] == 'E':
-						e_ct += 1
-					token += instruction[index]
-					index += 1
-				if index < instruction.length() and alphabetical.search(instruction[index]):
-					return [
-						true,
-						msg_error_at(instruction, index) + ': Invalid numeric notation.'
-					]
-				if e_ct > 1:
-					return [false, "Too many E's in " + token ]
-				tokens.append(token)
-				
-		elif instruction[index] in '*<>':
-			# could be *, *=, or **=
-			# or >, >=, or >>=
-			# or <, <=, or <<=
-			var token = instruction[index]
-			index += 1
-			if index < instruction.length() and instruction[index] == token:
-				token += instruction[index]
-				index += 1
-			if index < instruction.length() and instruction[index] == '=':
-				token += instruction[index]
-				index += 1
-			tokens.append(token)
-		elif instruction[index] in '|&':
-			var token = instruction[index]
-			index += 1
-			if index < instruction.length() and instruction[index] == token:
-				token += instruction[index]
-				index += 1
-			elif index < instruction.length() and instruction[index] == '=':
-				token += instruction[index]
-				index += 1
-			tokens.append(token)
-		elif instruction[index] in '!+-/%^=':
-			# could be ! or !=
-			var token = instruction[index]
-			index += 1
-			if index < instruction.length() and instruction[index] == '=':
-				token += instruction[index]
-				index += 1
-			tokens.append(token)
-		elif instruction[index] in ':()[]{} \t\r\n,':
-			var token = instruction[index]
-			tokens.append(token)
-			index += 1
-		elif instruction[index] == "'":
-			if index + 2 < instruction.length() and instruction.substr(index, 3) == "'''":
-				# triple single quoted string
-				var token = "'''"
-				index += 3
-				while index + 2 < instruction.length() and instruction.substr(index, 3) != "'''":
-					if instruction[index] == '\\':
-						token += instruction[index]
-						index += 1
-					token += instruction[index]
-					index += 1
-				token += "'''"
-				index += 3
-				tokens.append(token)
-			else:
-				# normal single quoted string
-				var token = instruction[index]
-				index += 1
-				while index < instruction.length() and instruction[index] != "'":
-					if instruction[index] == '\\':
-						token += instruction[index]
-						index += 1
-					token += instruction[index]
-					index += 1
-				token += instruction[index]
-				index += 1
-				tokens.append(token)
-		elif instruction[index] == '"':
-			if index + 2 < instruction.length() and instruction.substr(index, 3) == '"""':
-				# triple double quoted string
-				var token = '"""'
-				index += 3
-				while index + 2 < instruction.length() and instruction.substr(index, 3) != '"""':
-					if instruction[index] == '\\':
-						token += instruction[index]
-						index += 1
-					token += instruction[index]
-					index += 1
-				token += '"""'
-				index += 3
-				tokens.append(token)
-			else:
-				# normal double quoted string
-				var token = instruction[index]
-				index += 1
-				while index < instruction.length() and instruction[index] != '"':
-					if instruction[index] == '\\':
-						token += instruction[index]
-						index += 1
-					token += instruction[index]
-					index += 1
-				token += instruction[index]
-				index += 1
-				tokens.append(token)
-		else:
-			var err = """failed to parse:
-				tokens: {tokens}
-				character: {character}
-				instruction: {instruction}
-			""".format({
-				'tokens': tokens,
-				'character': instruction[index],
-				'instruction': instruction,
-			})
-			return [true, err]
-	
-	var final_tokens = []
-	var is_leading_whitespace = true
-	for token in tokens:
-		var is_newline = token in '\r\n'
-		var is_whitespace = token in ' \t'
-		
-		if is_leading_whitespace:
-			if not is_whitespace and not is_newline:
-				is_leading_whitespace = false
-			final_tokens.append(token)
-		else:
-			if is_newline:
-				is_leading_whitespace = true
-			if is_whitespace:
-				continue
-			final_tokens.append(token)
-	
-	return [false, final_tokens]
-
-
 func _delegate_evaluation(command: String, env: ReplEnv):
 	## Delegate command evaluation to godot
 	
@@ -240,11 +37,15 @@ func evaluate(command: String, env:ReplEnv) -> Array:
 	if command == '':
 		return [false, '']
 	
-	var tokenize_result = tokenize(command)
-	
+	var tokenizer = ReplTokenizer.new()
+	var tokenize_result = tokenizer.tokenize(command)
 	var mode = EvalMode.OPEN
 	if !tokenize_result[0]:  # no error
-		var tokens = tokenize_result[1]
+		var full_tokens = tokenize_result[1]
+		var tokens = []
+		for token in full_tokens:
+			tokens.append(token.content)
+			
 		while tokens.size() > 0:
 			var token = tokens.pop_front()
 			if mode == EvalMode.OPEN:

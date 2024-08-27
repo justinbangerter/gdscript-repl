@@ -1,6 +1,7 @@
 extends GutTest
 
 @onready var parser := preload('res://addons/repl/repl_parser.gd').new()
+@onready var tokenizer := preload('res://addons/repl/repl_tokenizer.gd').new()
 
 func before_each():
 	pass
@@ -166,5 +167,13 @@ var tokenize_params = [
 ]
 
 func test_tokenize(params=use_parameters(tokenize_params)):
-	var tokens = parser.tokenize(params[0])
-	assert_eq_deep(tokens, params[1])
+	var tokens = tokenizer.tokenize(params[0])
+	if tokens[0]:  # error
+		assert_eq_deep(tokens, params[1])
+		return
+	
+	# unpack the tokens to strings. This makes it easier to write the tests.
+	var unpacked_tokens = []
+	for token in tokens[1]:
+		unpacked_tokens.append(token.content)
+	assert_eq_deep([tokens[0], unpacked_tokens], params[1])

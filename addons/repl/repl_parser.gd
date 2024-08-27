@@ -3,9 +3,122 @@ extends Resource
 
 ## Handles parsing and evaluation of text
 
-const assignment_operators = [
-	'=', '+=', '-=', '*=', '/=', '**=', '%=', '&=', '|=', '^=', '<<=', '>>='
-]
+# https://github.com/godotengine/godot/blob/b97110cd307e4d78e20bfafe5de6c082194b2cd6/modules/gdscript/gdscript_tokenizer.cpp#L44
+const comparison_operators = {
+	"<": null, #LESS,
+	"<=": null, #LESS_EQUAL,
+	">": null, #GREATER,
+	">=": null, #GREATER_EQUAL,
+	"==": null, #EQUAL_EQUAL,
+	"!=": null, #BANG_EQUAL,
+}
+
+const logical_operators = {
+	"and": null, #AND,
+	"or": null, #OR,
+	"not": null, #NOT,
+	"&&": null, #AMPERSAND_AMPERSAND,
+	"||": null, #PIPE_PIPE,
+	"!": null, #BANG,
+}
+
+const bitwise_operators = {
+	"&": null, #AMPERSAND,
+	"|": null, #PIPE,
+	"~": null, #TILDE,
+	"^": null, #CARET,
+	"<<": null, #LESS_LESS,
+	">>": null, #GREATER_GREATER,
+}
+
+const math_operators = {
+	"+": null, #PLUS,
+	"-": null, #MINUS,
+	"*": null, #STAR,
+	"**": null, #STAR_STAR,
+	"/": null, #SLASH,
+	"%": null, #PERCENT,
+}
+
+const assignment_operators = {
+	"=": null, #EQUAL,
+	"+=": null, #PLUS_EQUAL,
+	"-=": null, #MINUS_EQUAL,
+	"*=": null, #STAR_EQUAL,
+	"**=": null, #STAR_STAR_EQUAL,
+	"/=": null, #SLASH_EQUAL,
+	"%=": null, #PERCENT_EQUAL,
+	"<<=": null, #LESS_LESS_EQUAL,
+	">>=": null, #GREATER_GREATER_EQUAL,
+	"&=": null, #AMPERSAND_EQUAL,
+	"|=": null, #PIPE_EQUAL,
+	"^=": null, #CARET_EQUAL,
+}
+
+const control_flow_names = {
+	"if": null, #IF,
+	"elif": null, #ELIF,
+	"else": null, #ELSE,
+	"for": null, #FOR,
+	"while": null, #WHILE,
+	"break": null, #BREAK,
+	"continue": null, #CONTINUE,
+	"pass": null, #PASS,
+	"return": null, #RETURN,
+	"match": null, #MATCH,
+	"when": null, #WHEN,
+}
+
+const keywords = {
+	"as": null, #AS,
+	"assert": null, #ASSERT,
+	"await": null, #AWAIT,
+	"breakpoint": null, #BREAKPOINT,
+	"class": null, #CLASS,
+	"class_name": null, #CLASS_NAME,
+	"const": null, #CONST,
+	"enum": null, #ENUM,
+	"extends": null, #EXTENDS,
+	"func": null, #FUNC,
+	"in": null, #IN,
+	"is": null, #IS,
+	"namespace": null, #NAMESPACE
+	"preload": null, #PRELOAD,
+	"self": null, #SELF,
+	"signal": null, #SIGNAL,
+	"static": null, #STATIC,
+	"super": null, #SUPER,
+	"trait": null, #TRAIT,
+	"var": null, #VAR,
+	"void": null, #VOID,
+	"yield": null, #YIELD,
+}
+
+const punctuation = {
+	"[": null, #BRACKET_OPEN,
+	"]": null, #BRACKET_CLOSE,
+	"{": null, #BRACE_OPEN,
+	"}": null, #BRACE_CLOSE,
+	"(": null, #PARENTHESIS_OPEN,
+	")": null, #PARENTHESIS_CLOSE,
+	",": null, #COMMA,
+	";": null, #SEMICOLON,
+	".": null, #PERIOD,
+	"..": null, #PERIOD_PERIOD,
+	":": null, #COLON,
+	"$": null, #DOLLAR,
+	"->": null, #FORWARD_ARROW,
+	"_": null, #UNDERSCORE,
+}
+
+# https://github.com/godotengine/godot/blob/b97110cd307e4d78e20bfafe5de6c082194b2cd6/modules/gdscript/gdscript_tokenizer.cpp#L44
+# The NaN value has been changed to match line 543 of the same file.
+const constants = {
+	"PI": null, #CONST_PI,
+	"TAU": null, #CONST_TAU,
+	"INF": null, #CONST_INF,
+	"NAN": null, #CONST_NAN,
+}
 
 enum EvalMode {
 	OPEN = 0,
@@ -13,210 +126,7 @@ enum EvalMode {
 	ASSIGN_VAR = 2,
 }
 
-func msg_error_at(instruction, index):
-	## Get a message that says there's an error in the instruction at the given index
-	## the message will have the line and column number
-	var line = 1
-	var char = 1
-	var i = 0
-	while i < index:
-		if instruction[i] in '\r\n':
-			line += 1
-			char = 1
-		else:
-			char += 1
-		i += 1
-	return ('Error at (%s, %s)' % [line, char])
-			
-
-
-func tokenize(instruction: String) -> Array:
-	## On failure, returns [true, "error message"]
-	## On success, returns [false, ['\t', '\t', 'list', 'of', 'tokens']]
-	## Leading whitespace is preserved, but inner whitespace is discarded
-	var tokens:Array[String] = []
-	
-	var alphabetical = RegEx.create_from_string("[a-zA-Z]")
-	var word_start_chars = RegEx.create_from_string("[a-zA-Z_]")
-	var word_end_chars = RegEx.create_from_string("[a-zA-Z_0-9]")
-
-	var index = 0
-	while index < instruction.length():
-		if word_start_chars.search(instruction[index]):
-			var token = instruction[index]
-			index += 1
-			while index < instruction.length() and word_end_chars.search(instruction[index]):
-				token += instruction[index]
-				index += 1
-			tokens.append(token)
-		elif index < instruction.length() and instruction[index] in '1234567890.':
-			var token = instruction[index]
-			index += 1
-			if token == '0' and index < instruction.length() and instruction[index] == 'b':
-				token += instruction[index]
-				index += 1
-				while index < instruction.length() and instruction[index] in '01':
-					token += instruction[index]
-					index += 1
-				if index < instruction.length() and alphabetical.search(instruction[index]):
-					return [
-						true,
-						msg_error_at(instruction, index) + ': Invalid numeric notation.'
-					]
-				tokens.append(token)
-			elif token == '0' and index < instruction.length() and instruction[index] == 'x':
-				token += instruction[index]
-				index += 1
-				while index < instruction.length() and instruction[index] in '01234567890abcdefABCDEF':
-					token += instruction[index]
-					index += 1
-				if index < instruction.length() and alphabetical.search(instruction[index]):
-					return [
-						true,
-						msg_error_at(instruction, index) + ': Invalid numeric notation.'
-					]
-				tokens.append(token)
-			elif token == '.' and index < instruction.length() and word_start_chars.search(instruction[index]):
-				# found a period, but it's a method invocation
-				tokens.append(token)
-			else:
-				var e_ct = 0
-				while index < instruction.length() and instruction[index] in '1234567890.E':
-					if instruction[index] == 'E':
-						e_ct += 1
-					token += instruction[index]
-					index += 1
-				if index < instruction.length() and alphabetical.search(instruction[index]):
-					return [
-						true,
-						msg_error_at(instruction, index) + ': Invalid numeric notation.'
-					]
-				if e_ct > 1:
-					return [false, "Too many E's in " + token ]
-				tokens.append(token)
-				
-		elif instruction[index] in '*<>':
-			# could be *, *=, or **=
-			# or >, >=, or >>=
-			# or <, <=, or <<=
-			var token = instruction[index]
-			index += 1
-			if index < instruction.length() and instruction[index] == token:
-				token += instruction[index]
-				index += 1
-			if index < instruction.length() and instruction[index] == '=':
-				token += instruction[index]
-				index += 1
-			tokens.append(token)
-		elif instruction[index] in '|&':
-			var token = instruction[index]
-			index += 1
-			if index < instruction.length() and instruction[index] == token:
-				token += instruction[index]
-				index += 1
-			elif index < instruction.length() and instruction[index] == '=':
-				token += instruction[index]
-				index += 1
-			tokens.append(token)
-		elif instruction[index] in '!+-/%^=':
-			# could be ! or !=
-			var token = instruction[index]
-			index += 1
-			if index < instruction.length() and instruction[index] == '=':
-				token += instruction[index]
-				index += 1
-			tokens.append(token)
-		elif instruction[index] in ':()[]{} \t\r\n,':
-			var token = instruction[index]
-			tokens.append(token)
-			index += 1
-		elif instruction[index] == "'":
-			if index + 2 < instruction.length() and instruction.substr(index, 3) == "'''":
-				# triple single quoted string
-				var token = "'''"
-				index += 3
-				while index + 2 < instruction.length() and instruction.substr(index, 3) != "'''":
-					if instruction[index] == '\\':
-						token += instruction[index]
-						index += 1
-					token += instruction[index]
-					index += 1
-				token += "'''"
-				index += 3
-				tokens.append(token)
-			else:
-				# normal single quoted string
-				var token = instruction[index]
-				index += 1
-				while index < instruction.length() and instruction[index] != "'":
-					if instruction[index] == '\\':
-						token += instruction[index]
-						index += 1
-					token += instruction[index]
-					index += 1
-				token += instruction[index]
-				index += 1
-				tokens.append(token)
-		elif instruction[index] == '"':
-			if index + 2 < instruction.length() and instruction.substr(index, 3) == '"""':
-				# triple double quoted string
-				var token = '"""'
-				index += 3
-				while index + 2 < instruction.length() and instruction.substr(index, 3) != '"""':
-					if instruction[index] == '\\':
-						token += instruction[index]
-						index += 1
-					token += instruction[index]
-					index += 1
-				token += '"""'
-				index += 3
-				tokens.append(token)
-			else:
-				# normal double quoted string
-				var token = instruction[index]
-				index += 1
-				while index < instruction.length() and instruction[index] != '"':
-					if instruction[index] == '\\':
-						token += instruction[index]
-						index += 1
-					token += instruction[index]
-					index += 1
-				token += instruction[index]
-				index += 1
-				tokens.append(token)
-		else:
-			var err = """failed to parse:
-				tokens: {tokens}
-				character: {character}
-				instruction: {instruction}
-			""".format({
-				'tokens': tokens,
-				'character': instruction[index],
-				'instruction': instruction,
-			})
-			return [true, err]
-	
-	var final_tokens = []
-	var is_leading_whitespace = true
-	for token in tokens:
-		var is_newline = token in '\r\n'
-		var is_whitespace = token in ' \t'
-		
-		if is_leading_whitespace:
-			if not is_whitespace and not is_newline:
-				is_leading_whitespace = false
-			final_tokens.append(token)
-		else:
-			if is_newline:
-				is_leading_whitespace = true
-			if is_whitespace:
-				continue
-			final_tokens.append(token)
-	
-	return [false, final_tokens]
-
-
-func _delegate_evaluation(command: String, env: ReplEnv):
+func delegate_evaluation(command: String, env: ReplEnv):
 	## Delegate command evaluation to godot
 	
 	# guarantee key/value order alignment
@@ -240,70 +150,109 @@ func evaluate(command: String, env:ReplEnv) -> Array:
 	if command == '':
 		return [false, '']
 	
-	var tokenize_result = tokenize(command)
-	
+	var expressions:Array[ReplExpression]
+	var tokenizer = ReplTokenizer.new()
+	var tokenize_result = tokenizer.tokenize(command)
+	if tokenize_result[0]:  # return error
+		return tokenize_result
+		
 	var mode = EvalMode.OPEN
-	if !tokenize_result[0]:  # no error
-		var tokens = tokenize_result[1]
-		while tokens.size() > 0:
-			var token = tokens.pop_front()
-			if mode == EvalMode.OPEN:
-				if token in '\t \r\n':
-					continue
-				elif token == 'var':
-					mode = EvalMode.DECLARE_VAR
-				elif tokens.size() > 0 and tokens[0] in assignment_operators:
-					mode = EvalMode.ASSIGN_VAR
-					tokens.push_front(token)
-			elif mode == EvalMode.DECLARE_VAR:
-				env.vars[token] = null
-				if tokens.size() == 0:
-					return [false, 'var declared: ' + token]
-				else: # push varname to front again for assignment
-					mode = EvalMode.ASSIGN_VAR
-					tokens.push_front(token)
-			elif mode == EvalMode.ASSIGN_VAR:
-				var varname = token
-				var operator = tokens.pop_front()
-				if operator not in assignment_operators:
-					return [false, 'Unrecognized assignment operator: ' + operator]
-				if tokens.size() == 0:
-					return [false, 'Missing right side of assignment expression']
-				var expression = ' '.join(tokens)
-				var eval_result = _delegate_evaluation(expression, env)
-				if eval_result[0]:
-					return [true, "Failed to evaluate expression: {expression}\n  Error: {error}".format({
-						'expression': expression,
-						'error': eval_result[0],
-					})]
-				var value = eval_result[1]
-				if operator == '=':
-					env.vars[varname] = value
-				elif operator == '+=':
-					env.vars[varname] += value
-				elif operator == '-=':
-					env.vars[varname] -= value
-				elif operator == '*=':
-					env.vars[varname] *= value
-				elif operator == '/=':
-					env.vars[varname] /= value
-				elif operator == '**=':
-					env.vars[varname] **= value
-				elif operator == '%=':
-					env.vars[varname] %= value
-				elif operator == '&=':
-					env.vars[varname] &= value
-				elif operator == '|=':
-					env.vars[varname] |= value
-				elif operator == '^=':
-					env.vars[varname] ^= value
-				elif operator == '<<=':
-					env.vars[varname] <<= value
-				elif operator == '>>=':
-					env.vars[varname] >>= value
+	var tokens = tokenize_result[1]
+	while tokens.size() > 0:
+		var token = tokens.pop_front()
+		if mode == EvalMode.OPEN:
+			if token.content in '\t \r\n':
+				continue
+			elif token.content == 'var':
+				mode = EvalMode.DECLARE_VAR
+			elif tokens.size() > 0 and assignment_operators.has(tokens[0].content):
+				mode = EvalMode.ASSIGN_VAR
+				tokens.push_front(token)
+			elif tokens.size() > 0 and tokens[0].content == '[':
+				# dictionary key stuff. assignment or access?
+				var tokens_left := []
+				var tokens_right := []
+				var assignment:ReplToken
+				for _token in tokens:
+					if assignment_operators.has(_token.content):
+						assignment = _token
+						continue
+					if assignment:
+						tokens_right.append(_token)
+					else:
+						tokens_left.append(_token)
+						
+				if assignment != null:
+					# pull the key from the id first, in case this is nested
+					#  for example x[0][test[1]] = 2
+					#  The key would be test[1]
+					#  The id would be x[0]
+					var key_tokens := []
+					tokens_left.pop_back()
+					var brackets := 1
+					while len(tokens_left) > 0 and brackets > 0:
+						var _token = tokens_left.pop_back()
+						if _token.content == ']':
+							brackets += 1
+						elif _token.content == '[':
+							brackets -= 1
+						if brackets > 0:  # we don't care about the opening bracket
+							key_tokens.append(_token)
+					
+					var id_tokens = tokens_left
+					id_tokens.push_front(token)
+					
+					expressions.append(
+						ReplExpression.REAssignment.new(
+							ReplPreAssign.DictionaryPreAssign.new(
+								ReplExpression.REDelegated.new(id_tokens),
+								ReplExpression.REDelegated.new(key_tokens),
+							),
+							assignment.ttype,
+							ReplExpression.REDelegated.new(tokens_right)
+						)
+					)
+					break
 				else:
-					return [true, 'Unrecognized assignment operator: ' + operator]
-				return [false, 'Variable assigned']
+					# delegate and return the whole thing
+					tokens.push_front(token)
+					expressions.append(ReplExpression.REDelegated.new(tokens))
+					tokens = []
+			else:
+				# delegate and return the whole thing
+				tokens.push_front(token)
+				expressions.append(ReplExpression.REDelegated.new(tokens))
+				tokens = []
+		elif mode == EvalMode.DECLARE_VAR:
+			expressions.append(ReplExpression.REDeclaration.new(token.content))
+			if len(tokens) == 0:
+				continue
+			mode = EvalMode.ASSIGN_VAR
+			tokens.push_front(token)
+		elif mode == EvalMode.ASSIGN_VAR:
+			var varname = token.content
+			var operator = tokens.pop_front()
+			if tokens.size() == 0:
+				return [false, 'Missing right side of assignment expression']
+			#if eval_result[0]:
+				#return [true, "Failed to evaluate expression: {expression}\n  Error: {error}".format({
+					#'expression': expression,
+					#'error': eval_result[0],
+				#})]
+			expressions.append(
+				ReplExpression.REAssignment.new(
+					ReplPreAssign.new(varname),
+					operator.ttype,
+					ReplExpression.REDelegated.new(tokens)
+				)
+			)
+			# no support for multiline statements yet
+			break
 	
-	# if the tokenizer failed, try delegating evaluation to godot to get a standard error message
-	return _delegate_evaluation(command, env)
+	var last_result = [false, '']
+	for expression in expressions:
+		if last_result[0]:  # propagate errors
+			return last_result
+		last_result = expression.evaluate(env)
+	
+	return last_result

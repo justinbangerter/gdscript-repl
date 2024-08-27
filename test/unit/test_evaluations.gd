@@ -76,14 +76,31 @@ var evaluate_params = [
 		],
 		[false, [1, 2, 3]]
 	],
-	#[
-		#[
-			#'var x = {}',
-			#'x["test"] = 3',
-			#'x["test"]'
-		#],
-		#[false, 3]
-	#],
+	[
+		[
+			'var x = {}',
+			'x["test"] = 3',
+			'x["test"]'
+		],
+		[false, 3]
+	],
+	[
+		[
+			'var x = {}',
+			'x["test"] = {}',
+			'x["test"]["asdf"] = 3',
+			'x["test"]["asdf"]'
+		],
+		[false, 3]
+	],
+	[
+		[
+			'var x = {"b": 3}',
+			'var y = {"a": "b"}',
+			'x[y["a"]]',
+		],
+		[false, 3]
+	],
 	# TODO: load enums from the base environment
 	#[
 		#[

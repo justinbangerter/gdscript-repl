@@ -168,8 +168,58 @@ func evaluate(command: String, env:ReplEnv) -> Array:
 			elif tokens.size() > 0 and assignment_operators.has(tokens[0].content):
 				mode = EvalMode.ASSIGN_VAR
 				tokens.push_front(token)
+			elif tokens.size() > 0 and tokens[0].content == '[':
+				# dictionary key stuff. assignment or access?
+				var tokens_left := []
+				var tokens_right := []
+				var assignment:ReplToken
+				for _token in tokens:
+					if assignment_operators.has(_token.content):
+						assignment = _token
+						continue
+					if assignment:
+						tokens_right.append(_token)
+					else:
+						tokens_left.append(_token)
+						
+				if assignment != null:
+					# pull the key from the id first, in case this is nested
+					#  for example x[0][test[1]] = 2
+					#  The key would be test[1]
+					#  The id would be x[0]
+					var key_tokens := []
+					tokens_left.pop_back()
+					var brackets := 1
+					while len(tokens_left) > 0 and brackets > 0:
+						var _token = tokens_left.pop_back()
+						if _token.content == ']':
+							brackets += 1
+						elif _token.content == '[':
+							brackets -= 1
+						if brackets > 0:  # we don't care about the opening bracket
+							key_tokens.append(_token)
+					
+					var id_tokens = tokens_left
+					id_tokens.push_front(token)
+					
+					expressions.append(
+						ReplExpression.REAssignment.new(
+							ReplPreAssign.DictionaryPreAssign.new(
+								ReplExpression.REDelegated.new(id_tokens),
+								ReplExpression.REDelegated.new(key_tokens),
+							),
+							assignment.ttype,
+							ReplExpression.REDelegated.new(tokens_right)
+						)
+					)
+					break
+				else:
+					# delegate and return the whole thing
+					tokens.push_front(token)
+					expressions.append(ReplExpression.REDelegated.new(tokens))
+					tokens = []
 			else:
-				# delegate and return
+				# delegate and return the whole thing
 				tokens.push_front(token)
 				expressions.append(ReplExpression.REDelegated.new(tokens))
 				tokens = []

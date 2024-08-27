@@ -55,34 +55,72 @@ class REAssignment extends ReplExpression:
 		var right_result = right.evaluate(env)
 		if right_result[0]:
 			return right_result  # just propagate errors
+			
+		var assigned = null
 		match op:
 			ReplToken.TokenType.TK_OP_EQUAL:
-				left.assign(right_result[1], env)
+				assigned = left.assign(right_result[1], env)
 			ReplToken.TokenType.TK_OP_MUL_EQUAL:
-				left.assign(left.access(env) * right_result[1], env)
+				var accessed = left.access(env)
+				if accessed[0]:
+					return accessed
+				assigned = left.assign(accessed[1] * right_result[1], env)
 			ReplToken.TokenType.TK_OP_POW_EQUAL:
-				left.assign(left.access(env) ** right_result[1], env)
+				var accessed = left.access(env)
+				if accessed[0]:
+					return accessed
+				assigned = left.assign(accessed[1] ** right_result[1], env)
 			ReplToken.TokenType.TK_OP_SHIFT_RIGHT_EQUAL:
-				left.assign(left.access(env) >> right_result[1], env)
+				var accessed = left.access(env)
+				if accessed[0]:
+					return accessed
+				assigned = left.assign(accessed[1] >> right_result[1], env)
 			ReplToken.TokenType.TK_OP_SHIFT_LEFT_EQUAL:
-				left.assign(left.access(env) << right_result[1], env)
+				var accessed = left.access(env)
+				if accessed[0]:
+					return accessed
+				assigned = left.assign(accessed[1] << right_result[1], env)
 			ReplToken.TokenType.TK_OP_BIT_OR_EQUAL:
-				left.assign(left.access(env) | right_result[1], env)
+				var accessed = left.access(env)
+				if accessed[0]:
+					return accessed
+				assigned = left.assign(accessed[1] | right_result[1], env)
 			ReplToken.TokenType.TK_OP_BIT_AND_EQUAL:
-				left.assign(left.access(env) & right_result[1], env)
+				var accessed = left.access(env)
+				if accessed[0]:
+					return accessed
+				assigned = left.assign(accessed[1] & right_result[1], env)
 			ReplToken.TokenType.TK_OP_BIT_XOR_EQUAL:
-				left.assign(left.access(env) ^ right_result[1], env)
+				var accessed = left.access(env)
+				if accessed[0]:
+					return accessed
+				assigned = left.assign(accessed[1] ^ right_result[1], env)
 			ReplToken.TokenType.TK_OP_ADD_EQUAL:
-				left.assign(left.access(env) + right_result[1], env)
+				var accessed = left.access(env)
+				if accessed[0]:
+					return accessed
+				assigned = left.assign(accessed[1] + right_result[1], env)
 			ReplToken.TokenType.TK_OP_SUB_EQUAL:
-				left.assign(left.access(env) - right_result[1], env)
+				var accessed = left.access(env)
+				if accessed[0]:
+					return accessed
+				assigned = left.assign(accessed[1] - right_result[1], env)
 			ReplToken.TokenType.TK_OP_DIV_EQUAL:
-				left.assign(left.access(env) / right_result[1], env)
+				var accessed = left.access(env)
+				if accessed[0]:
+					return accessed
+				assigned = left.assign(accessed[1] / right_result[1], env)
 			ReplToken.TokenType.TK_OP_MOD_EQUAL:
-				left.assign(left.access(env) % right_result[1], env)
+				var accessed = left.access(env)
+				if accessed[0]:
+					return accessed
+				assigned = left.assign(accessed[1] % right_result[1], env)
 			_:
 				return [true, "Assignment op not handled: %s" % op]
 		
+		if assigned[0]:  # propagate errors
+			return assigned
+			
 		return [false, "Variable assigned"]
 		
 	

@@ -3,10 +3,6 @@ extends Resource
 
 ## Handles tokanizing text
 
-const assignment_operators = [
-	'=', '+=', '-=', '*=', '/=', '**=', '%=', '&=', '|=', '^=', '<<=', '>>='
-]
-
 func msg_error_at(instruction, index):
 	## Get a message that says there's an error in the instruction at the given index
 	## the message will have the line and column number
@@ -203,7 +199,7 @@ func tokenize(instruction: String) -> Array:
 				'^=':
 					rToken.ttype = ReplToken.TokenType.TK_OP_BIT_XOR_EQUAL
 				'=':
-					rToken.ttype = ReplToken.TokenType.TK_OP_AND
+					rToken.ttype = ReplToken.TokenType.TK_OP_EQUAL
 				'==':
 					rToken.ttype = ReplToken.TokenType.TK_OP_EQUAL_EQUAL
 		elif instruction[index] in ':()[]{} \t\r\n,':

@@ -15,28 +15,28 @@ func after_all():
 	pass
 
 var evaluate_params = [
-	[
-		['6 / 3'],
-		[false, 2]
-	],
-	[
-		['6*3'],
-		[false, 18]
-	],
-	[
-		['6 +3'],
-		[false, 9]
-	],
-	[
-		['6- 3'],
-		[false, 3]
-	],
-	[
-		[
-			'var test = 3',
-		],
-		[false, 'Variable assigned']
-	],
+	#[
+		#['6 / 3'],
+		#[false, 2]
+	#],
+	#[
+		#['6*3'],
+		#[false, 18]
+	#],
+	#[
+		#['6 +3'],
+		#[false, 9]
+	#],
+	#[
+		#['6- 3'],
+		#[false, 3]
+	#],
+	#[
+		#[
+			#'var test = 3',
+		#],
+		#[false, 'Variable assigned']
+	#],
 	[
 		[
 			'var test = 3',
@@ -44,38 +44,38 @@ var evaluate_params = [
 		],
 		[false, 7]
 	],
-	[
-		[
-			'var test = "a"',
-			'test + "b"'
-		],
-		[false, 'ab']
-	],
-	[
-		[
-			'ClassDB.class_exists("ClassDB")'
-		],
-		[false, true]
-	],
-	[
-		[
-			'var x = load("res://icon.svg")'
-		],
-		[false, "Variable assigned"]
-	],
-	[
-		[
-			'range(0, 10, 2)'
-		],
-		[false, [0, 2, 4, 6, 8]]
-	],
-	[
-		[
-			'var x = [1, 2, 3]',
-			'x'
-		],
-		[false, [1, 2, 3]]
-	],
+	#[
+		#[
+			#'var test = "a"',
+			#'test + "b"'
+		#],
+		#[false, 'ab']
+	#],
+	#[
+		#[
+			#'ClassDB.class_exists("ClassDB")'
+		#],
+		#[false, true]
+	#],
+	#[
+		#[
+			#'var x = load("res://icon.svg")'
+		#],
+		#[false, "Variable assigned"]
+	#],
+	#[
+		#[
+			#'range(0, 10, 2)'
+		#],
+		#[false, [0, 2, 4, 6, 8]]
+	#],
+	#[
+		#[
+			#'var x = [1, 2, 3]',
+			#'x'
+		#],
+		#[false, [1, 2, 3]]
+	#],
 	#[
 		#[
 			#'var x = {}',

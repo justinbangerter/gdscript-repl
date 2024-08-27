@@ -67,3 +67,7 @@ enum TokenType {
 	TK_STR_DQ,
 	TK_STR_TDQ,
 }
+
+func _init(content="", ttype=TokenType.TK_IDENTIFIER):
+	self.content = content
+	self.ttype = ttype

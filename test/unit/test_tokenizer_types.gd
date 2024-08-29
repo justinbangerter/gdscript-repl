@@ -168,6 +168,17 @@ var tokenize_params = [
 			]
 		]
 	],
+	[
+		'a := b',
+		[
+			false,
+			[
+				ReplToken.TokenType.TK_IDENTIFIER,
+				ReplToken.TokenType.TK_OP_COLON_EQUAL,
+				ReplToken.TokenType.TK_IDENTIFIER,
+			]
+		]
+	],
 ]
 
 

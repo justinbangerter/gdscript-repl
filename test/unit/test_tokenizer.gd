@@ -164,6 +164,10 @@ var tokenize_params = [
 		'var x = Area2D.new()',
 		[false, ['var', 'x', '=', 'Area2D', '.', 'new', '(', ')']]
 	],
+	[
+		'var x := 3',
+		[false, ['var', 'x', ':=' , '3']]
+	]
 ]
 
 func test_tokenize(params=use_parameters(tokenize_params)):

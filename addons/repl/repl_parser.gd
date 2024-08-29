@@ -53,6 +53,7 @@ const assignment_operators = {
 	"&=": null, #AMPERSAND_EQUAL,
 	"|=": null, #PIPE_EQUAL,
 	"^=": null, #CARET_EQUAL,
+	":=": null, #COLON_EQUAL,
 }
 
 const control_flow_names = {

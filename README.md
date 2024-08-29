@@ -40,6 +40,9 @@ To help, you can
 	* You can use the GUT plugin to run the tests
 	* You can also use the scripts under `scripts/` to run the unit tests
 * Submit pull requests
+	* Fix open tickets
+	* Propose your own features if you like
+	* Get some of the commented out unit tests to pass
 
 ## Licensing
 Copyright (c) 2024 Justin Bangerter

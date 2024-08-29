@@ -33,6 +33,23 @@ static func _static_init():
 		{"test": 5},
 	])
 	
+	# evaluation of walrus assignment
+	expression_params.append([
+		ReplExpression.REAssignment.new(
+			ReplPreAssign.new("test"),
+			ReplToken.TokenType.TK_OP_COLON_EQUAL,
+			ReplExpression.REDelegated.new([
+				ReplToken.new(
+					"5",
+					ReplToken.TokenType.TK_CONSTANT
+				)
+			])
+		),
+		{},
+		[false, "Variable assigned"],
+		{"test": 5},
+	])
+	
 	# evaluation of declaration
 	expression_params.append([
 		ReplExpression.REDeclaration.new("test"),

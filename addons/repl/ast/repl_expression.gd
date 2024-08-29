@@ -60,6 +60,8 @@ class REAssignment extends ReplExpression:
 		match op:
 			ReplToken.TokenType.TK_OP_EQUAL:
 				assigned = left.assign(right_result[1], env)
+			ReplToken.TokenType.TK_OP_COLON_EQUAL:
+				assigned = left.assign(right_result[1], env)
 			ReplToken.TokenType.TK_OP_MUL_EQUAL:
 				var accessed = left.access(env)
 				if accessed[0]:

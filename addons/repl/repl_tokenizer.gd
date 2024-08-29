@@ -163,7 +163,7 @@ func tokenize(instruction: String) -> Array:
 					rToken.ttype = ReplToken.TokenType.TK_OP_AND
 				'&=':
 					rToken.ttype = ReplToken.TokenType.TK_OP_BIT_AND_EQUAL
-		elif instruction[index] in '!+-/%^=':
+		elif instruction[index] in ':!+-/%^=':
 			# could be ! or !=
 			var token = instruction[index]
 			index += 1
@@ -202,15 +202,17 @@ func tokenize(instruction: String) -> Array:
 					rToken.ttype = ReplToken.TokenType.TK_OP_EQUAL
 				'==':
 					rToken.ttype = ReplToken.TokenType.TK_OP_EQUAL_EQUAL
-		elif instruction[index] in ':()[]{} \t\r\n,':
+				':':
+					rToken.ttype = ReplToken.TokenType.TK_COLON
+				':=':
+					rToken.ttype = ReplToken.TokenType.TK_OP_COLON_EQUAL
+		elif instruction[index] in '()[]{} \t\r\n,':
 			var token = instruction[index]
 			var rToken = ReplToken.new()
 			rToken.content = token
 			tokens.append(rToken)
 			index += 1
 			match token:
-				':':
-					rToken.ttype = ReplToken.TokenType.TK_COLON
 				'(':
 					rToken.ttype = ReplToken.TokenType.TK_PARENTHESIS_OPEN
 				')':

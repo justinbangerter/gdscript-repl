@@ -41,6 +41,10 @@ class DictionaryPreAssign extends ReplPreAssign:
 	func access(env:ReplEnv):
 		# pull the value from the environment in case it needs to be transformed
 		# before reassignment
-		var id = id_expression.evaluate(env)
+		var dict = id_expression.evaluate(env)
+		if dict[0]:
+			return dict
 		var key = key_expression.evaluate(env)
-		return [false, env.vars[id][key]]
+		if key[0]:
+			return key
+		return [false, dict[1][key[1]]]

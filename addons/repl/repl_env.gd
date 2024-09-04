@@ -56,6 +56,8 @@ const forbidden_classes = {
 	'ThemeContext': null,
 	
 	## these classes create parse errors on plugin load.
+	## With ClassDB.can_instantiate(..) in 4.3, they don't load anyway.
+	## TODO: Test whether these load in 4.2 and remove this list if not.
 	"AbstractPolygon2DEditor": null,
 	"AbstractPolygon2DEditorPlugin": null,
 	"ActionMapEditor": null,
@@ -449,7 +451,7 @@ const forbidden_classes = {
 	"VoxelGIGizmoPlugin": null,
 	"WindowWrapper": null,
 	
-	# Godot 4.3
+	# Godot 4.3 (parse errors)
 	"AudioStreamImportSettingsDialog": null,
 	"AudioStreamInteractiveEditorPlugin": null,
 	"AudioStreamInteractiveTransitionEditor": null,
@@ -460,6 +462,7 @@ const forbidden_classes = {
 	"EditorAudioStreamTooltipPlugin": null,
 	"EditorBottomPanel": null,
 	"EditorDockManager": null,
+	"EditorFileSystemImportFormatSupportQueryBlend": null,
 	"EditorInspectorParticleProcessMaterialPlugin": null,
 	"EditorInspectorPluginAudioStreamInteractive": null,
 	"EditorSceneExporterGLTFSettings": null,
@@ -483,6 +486,8 @@ func _init(_vars={}):
 	vars = _vars
 	for clazz in ClassDB.get_class_list():
 		if clazz in vars:
+			continue
+		if not ClassDB.can_instantiate(clazz):
 			continue
 		if clazz in forbidden_classes:
 			continue

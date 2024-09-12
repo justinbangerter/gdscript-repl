@@ -483,11 +483,16 @@ var vars
 
 
 func _init(_vars={}):
+	# store singletons for lookup later
+	var singletons = {}
+	for singleton in Engine.get_singleton_list():
+		singletons[singleton] = null
+	
 	vars = _vars
 	for clazz in ClassDB.get_class_list():
 		if clazz in vars:
 			continue
-		if not ClassDB.can_instantiate(clazz):
+		if not ClassDB.can_instantiate(clazz) and not singletons.has(clazz):
 			continue
 		if clazz in forbidden_classes:
 			continue
@@ -509,13 +514,10 @@ func eval_label(label:String):
 	var contents = "static func eval(): return %s" % label
 	eval_script.set_source_code(contents)
 	var error := eval_script.reload()
-	var result
 	if(error == OK):
-		result = [false, eval_script.eval()]
+		return [false, eval_script.eval()]
 	else:
-		var msg = "Identifier '%s' not declared in the current scope." % label
-		result = [true, msg]
-	return result
+		return [true, "Identifier '%s' not declared in the current scope." % label]
 
 
 func char(char):

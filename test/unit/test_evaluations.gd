@@ -109,21 +109,28 @@ var evaluate_params = [
 		],
 		[false, 6]
 	],
+	# walrus operator (type inference)
 	[
 		[
 			'var y := 1',
 			'y',
 		],
 		[false, 1]
-	]
-	# TODO: load enums from the base environment
+	],
+	# global singletons
+	[
+		[
+			'Input',
+		],
+		[false, Input]
+	],
+	# TODO global enums and constants
 	#[
 		#[
 			#'OK'
 		#],
 		#[false, 0]
 	#],
-	# TODO: load enums from the base environment
 	#[
 		#[
 			#'TYPE_NIL'

@@ -488,6 +488,10 @@ func _init(_vars={}):
 	for singleton in Engine.get_singleton_list():
 		singletons[singleton] = null
 	
+	for constant in ReplConstants.constants:
+		if constant not in _vars:
+			_vars[constant] = ReplConstants.constants[constant]
+	
 	vars = _vars
 	for clazz in ClassDB.get_class_list():
 		if clazz in vars:

@@ -124,19 +124,19 @@ var evaluate_params = [
 		],
 		[false, Input]
 	],
-	# TODO global enums and constants
-	#[
-		#[
-			#'OK'
-		#],
-		#[false, 0]
-	#],
-	#[
-		#[
-			#'TYPE_NIL'
-		#],
-		#[false, 0]
-	#],
+	# global enums and constants
+	[
+		[
+			'OK'
+		],
+		[false, 0]
+	],
+	[
+		[
+			'TYPE_NIL'
+		],
+		[false, 0]
+	],
 	# TODO: if statement
 	#[
 		#[

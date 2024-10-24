@@ -137,6 +137,51 @@ var evaluate_params = [
 		],
 		[false, 0]
 	],
+	# string assignment
+	[
+		[
+			'var x = "asdf"',
+			'x',
+		],
+		[false, 'asdf']
+	],
+	[
+		[
+			"var x = 'asdf'",
+			'x',
+		],
+		[false, 'asdf']
+	]
+	# see: https://github.com/godotengine/godot/issues/98481
+	#[
+		#[
+			#'var x = """asdf"""',
+			#'x',
+		#],
+		#[false, 'asdf']
+	#],
+	# see: https://github.com/godotengine/godot/issues/98481
+	#[
+		#[
+			#"var x = '''asdf'''",
+			#'x',
+		#],
+		#[false, 'asdf']
+	#],
+	# see: https://github.com/godotengine/godot/issues/98481
+	#[
+		#[
+			#'"x" == """x"""'
+		#],
+		#[false, true]
+	#]
+	#[
+		#[
+			#'"""asdf',
+			#'test"""'
+		#],
+		#[false, """asdf\ntest"""]
+	#]
 	# TODO: if statement
 	#[
 		#[

@@ -246,6 +246,9 @@ func tokenize(instruction: String) -> Array:
 						index += 1
 					token += instruction[index]
 					index += 1
+				# still haven't looked at the last three quotes
+				if instruction.substr(index, 3) != "'''":
+					return [true, "Unterminated triple string"]
 				token += "'''"
 				index += 3
 				var rToken = ReplToken.new()
@@ -279,6 +282,9 @@ func tokenize(instruction: String) -> Array:
 						index += 1
 					token += instruction[index]
 					index += 1
+				# still haven't looked at the last three quotes
+				if instruction.substr(index, 3) != '"""':
+					return [true, "Unterminated triple string"]
 				token += '"""'
 				index += 3
 				var rToken = ReplToken.new()

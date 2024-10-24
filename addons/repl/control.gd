@@ -8,7 +8,8 @@ extends Control
 @onready var _env := ReplEnv.new()
 @onready var _parser := ReplParser.new()
 @onready var _history:Array[String] = []
-@onready var _future:Array[String] = []
+@onready var _index:int = -1
+
 
 func _ready():
 	command_output.add_text('>>> ')
@@ -17,7 +18,7 @@ func _ready():
 
 func _on_tree_exited():
 	_history = []
-	_future = []
+	_index = -1
 
 
 func evaluate_from_input():
@@ -25,20 +26,40 @@ func evaluate_from_input():
 	if command_input.text != '':
 		var result = _parser.evaluate(command_input.text, _env)
 		command_output.add_text(str(result[1]) + '\n')
-		_history.append(command_input.text)
+		# if no history, add the line
+		if len(_history) == 0:
+			_history.append(command_input.text)
+		# if the line doesn't match the last record, add it
+		elif _history[len(_history) - 1] != command_input.text:
+			_history.append(command_input.text)
+		_index = -1
 		command_input.clear()
 	command_output.add_text('>>> ')
 	command_output.scroll_to_line(command_output.get_line_count())
 
 
-func shift_input_stack(input:LineEdit, from_stack:Array[String], to_stack:Array[String]) -> void:
-	# move strings: from_stack -> input -> to_stack
-	if input.text.length() > 0:
-		to_stack.append(input.text)
-	if from_stack.size() > 0:
-		input.text = from_stack.pop_back()
-	else:
+func shift_input_stack(input:LineEdit, stack:Array[String], direction:int) -> void:
+	# index: the position from the back of stack
+	# direction: +/- 1 to go up/down the stack
+	
+	# if we have text and it isn't on the stack, and we're at the bottom, add it
+	if input.text.length() > 0 and _index < 0:
+		stack.insert(_index, input.text)
+		_index += 1
+	
+	_index += direction
+	
+	if _index < 0:
 		input.text = ''
+	elif _index > len(stack) - 1:
+		# already at the top
+		pass
+	else:
+		var length = len(stack)
+		var read_index = length - _index - 1
+		input.text = stack[read_index]
+	
+	_index = clamp(_index, -1, len(stack) - 1)
 	
 
 func _on_input_line_edit_gui_input(event):
@@ -49,9 +70,9 @@ func _on_input_line_edit_gui_input(event):
 		elif event.pressed and event.keycode == KEY_TAB:
 			get_viewport().set_input_as_handled()
 		elif event.pressed and event.keycode == KEY_UP:
-			shift_input_stack(command_input, _history, _future)
+			shift_input_stack(command_input, _history, +1)
 		elif event.pressed and event.keycode == KEY_DOWN:
-			shift_input_stack(command_input, _future, _history)
+			shift_input_stack(command_input, _history, -1)
 
 
 func _on_eval_button_pressed():

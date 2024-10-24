@@ -167,6 +167,34 @@ var tokenize_params = [
 	[
 		'var x := 3',
 		[false, ['var', 'x', ':=' , '3']]
+	],
+	[
+		'"""asdf"""',
+		[false, ['"""asdf"""']]
+	],
+	[
+		'"""asdf',
+		[true, "Unterminated triple string"]
+	],
+	[
+		'"""asdf"',
+		[true, "Unterminated triple string"]
+	],
+	[
+		'"""asdf""',
+		[true, "Unterminated triple string"]
+	],
+	[
+		"'''asdf",
+		[true, "Unterminated triple string"]
+	],
+	[
+		"'''asdf'",
+		[true, "Unterminated triple string"]
+	],
+	[
+		"'''asdf''",
+		[true, "Unterminated triple string"]
 	]
 ]
 

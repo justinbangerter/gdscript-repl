@@ -159,6 +159,8 @@ func evaluate(command: String, env:ReplEnv) -> Array:
 		
 	var mode = EvalMode.OPEN
 	var tokens = tokenize_result[1]
+	# workaround: see https://github.com/godotengine/godot/issues/98481
+	tokenizer.replace_triple_strings(tokens)
 	while tokens.size() > 0:
 		var token = tokens.pop_front()
 		if mode == EvalMode.OPEN:

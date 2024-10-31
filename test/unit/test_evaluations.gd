@@ -151,30 +151,40 @@ var evaluate_params = [
 			'x',
 		],
 		[false, 'asdf']
-	]
-	# see: https://github.com/godotengine/godot/issues/98481
-	#[
-		#[
-			#'var x = """asdf"""',
-			#'x',
-		#],
-		#[false, 'asdf']
-	#],
-	# see: https://github.com/godotengine/godot/issues/98481
-	#[
-		#[
-			#"var x = '''asdf'''",
-			#'x',
-		#],
-		#[false, 'asdf']
-	#],
-	# see: https://github.com/godotengine/godot/issues/98481
-	#[
-		#[
-			#'"x" == """x"""'
-		#],
-		#[false, true]
-	#]
+	],
+	[
+		[
+			'var x = """asdf"""',
+			'x',
+		],
+		[false, 'asdf']
+	],
+	[
+		[
+			"var x = '''asdf'''",
+			'x',
+		],
+		[false, 'asdf']
+	],
+	[
+		[
+			'"x" == """x"""'
+		],
+		[false, true]
+	],
+	[
+		[
+			'"asdf\\"test" == """asdf"test"""'
+		],
+		[false, true]
+	],
+	[
+		[
+			"""'asdf\\'test' == '''asdf'test'''"""
+		],
+		[false, true]
+	],
+	# TODO: multiline triple strings in repl
 	#[
 		#[
 			#'"""asdf',

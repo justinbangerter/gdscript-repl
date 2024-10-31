@@ -209,3 +209,27 @@ func test_tokenize(params=use_parameters(tokenize_params)):
 	for token in tokens[1]:
 		unpacked_tokens.append(token.content)
 	assert_eq_deep([tokens[0], unpacked_tokens], params[1])
+	
+
+var triple_string_params =[
+	[
+		'"""x"""',
+		'"x"'
+	],
+	[
+		"'''x'''",
+		"'x'"
+	],
+	# handle quotes within the string
+	[
+		'''""" foo " bar \" bas \\" bat ' fizz \' buzz \\' """''',
+		'''" foo \\" bar \\\" bas \\\\" bat ' fizz \' buzz \\' "'''
+	],
+	[
+		"""''' foo " bar \" bas \\" bat ' fizz \' buzz \\' '''""",
+		"""' foo " bar \" bas \\" bat \\' fizz \\\' buzz \\\\' '"""
+	]
+]
+func test_triple_strings(params=use_parameters(triple_string_params)):
+	var result = tokenizer.replace_triple_string(params[0])
+	assert_eq_deep(result, params[1])

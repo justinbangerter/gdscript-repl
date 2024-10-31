@@ -17,7 +17,44 @@ func msg_error_at(instruction, index):
 			char += 1
 		i += 1
 	return ('Error at (%s, %s)' % [line, char])
-			
+
+
+func replace_triple_strings(tokens: Array):
+	## modifies an array of tokens in-place
+	## converts all triple strings to normal strings and updates the ttype
+	for token in tokens:
+		if token.ttype == ReplToken.TokenType.TK_STR_TSQ:
+			token.content = self.replace_triple_string(token.content)
+			token.ttype = ReplToken.TokenType.TK_STR_SQ
+		elif token.ttype == ReplToken.TokenType.TK_STR_TDQ:
+			token.content = self.replace_triple_string(token.content)
+			token.ttype = ReplToken.TokenType.TK_STR_DQ
+
+func replace_triple_string(token: String):
+	## workaround: see https://github.com/godotengine/godot/issues/98481
+	## The gdscript evaluator doesn't handle triple strings.
+	## So, we convert them to single or double quoted strings.
+	## It's likely to stay here for a long time for backward compatibility
+	
+	if token.begins_with('"""'):
+		token = token.substr(3, len(token) - 6)
+		var result = ""
+		for index in len(token):
+			if token[index] == '"':
+				result += '\\'
+			result += token[index]
+		token = '"%s"' % result
+	
+	elif token.begins_with("'''"):
+		token = token.substr(3, len(token) - 6)
+		var result = ''
+		for index in len(token):
+			if token[index] == "'":
+				result += '\\'
+			result += token[index]
+		token = "'%s'" % result
+	
+	return token
 
 
 func tokenize(instruction: String) -> Array:
@@ -306,7 +343,7 @@ func tokenize(instruction: String) -> Array:
 				var rToken = ReplToken.new()
 				rToken.content = token
 				tokens.append(rToken)
-				rToken.ttype = ReplToken.TokenType.TK_STR_TDQ
+				rToken.ttype = ReplToken.TokenType.TK_STR_DQ
 		else:
 			var err = """failed to parse:
 				tokens: {tokens}

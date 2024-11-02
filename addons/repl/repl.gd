@@ -1,4 +1,5 @@
 @tool
+class_name ReplPlugin
 extends EditorPlugin
 
 var control

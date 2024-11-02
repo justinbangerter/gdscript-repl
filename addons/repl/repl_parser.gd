@@ -159,6 +159,9 @@ func evaluate(command: String, env:ReplEnv) -> Array:
 		
 	var mode = EvalMode.OPEN
 	var tokens = tokenize_result[1]
+	if len(tokens) and tokens[0].content == '/' and tokens[1].content == 'help':
+		var help = ReplHelp.new()
+		return help.help(tokens)
 	# workaround: see https://github.com/godotengine/godot/issues/98481
 	tokenizer.replace_triple_strings(tokens)
 	while tokens.size() > 0:
@@ -236,7 +239,7 @@ func evaluate(command: String, env:ReplEnv) -> Array:
 			var varname = token.content
 			var operator = tokens.pop_front()
 			if tokens.size() == 0:
-				return [false, 'Missing right side of assignment expression']
+				return [true, 'Missing right side of assignment expression']
 			#if eval_result[0]:
 				#return [true, "Failed to evaluate expression: {expression}\n  Error: {error}".format({
 					#'expression': expression,

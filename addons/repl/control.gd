@@ -1,4 +1,5 @@
 @tool
+class_name ReplControl
 extends Control
 
 @onready var command_input := %InputLineEdit
@@ -10,8 +11,17 @@ extends Control
 @onready var _history:Array[String] = []
 @onready var _index:int = -1
 
-
 func _ready():
+	var export_config := ConfigFile.new()
+	var err = export_config.load("res://addons/repl/plugin.cfg")
+	if err == OK:
+		var version = export_config.get_value("plugin", 'version')
+		command_output.add_text('GDScript REPL: v%s\n' % version)
+	else:
+		push_warning("GDScript REPL: Couldn't read repl/plugin.cfg")
+		command_output.add_text('GDScript REPL\n')
+		
+	command_output.add_text('Run `/help` for documentation\n')
 	command_output.add_text('>>> ')
 	command_input.grab_focus()
 

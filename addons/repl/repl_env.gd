@@ -504,6 +504,35 @@ func _init(_vars={}):
 		if result[0]:  # error
 			continue
 		vars[clazz] = result[1]
+	
+	var autoloads = read_autoloads()
+	for clazz in autoloads:
+		vars[clazz] = autoloads[clazz]
+
+
+func read_autoloads():
+	var classes = {}
+	var f = FileAccess.open("res://addons/repl/autoloads.txt", FileAccess.READ)
+	if f == null:
+		push_warning("Could not find res://addons/repl/autoloads.txt. Was it deleted?")
+		return classes
+		
+	while not f.eof_reached():
+		var line = f.get_line()
+		if line.length() == 0:
+			continue
+		if line.substr(0, 1) == '#':
+			continue
+		var script_path = line.strip_edges(true, true)
+		var script = load(script_path)
+		var clazz_name = script.get_global_name()
+		if clazz_name == '':
+			push_warning("REPL autoloaded a script with no class_name at " + script_path)
+			push_warning("Without a class_name, the script can't be referenced in the REPL.")
+			continue
+		classes[clazz_name] = script
+	f.close()
+	return classes
 
 
 func type_name(val):
@@ -512,6 +541,39 @@ func type_name(val):
 		return val.get_class()
 	return name
 
+
+func dir(obj):
+	match typeof(obj):
+		TYPE_CALLABLE:
+			var name = obj.get_method()
+			if name == null:
+				return obj
+			
+			for method in obj.get_object().get_method_list():
+				if method['name'] == name:
+					return method
+			return obj
+			
+		TYPE_OBJECT:
+			var items = {
+				'class_name': obj.get_class(),
+				'properties':[],
+				'signals':[],
+				'methods':[],
+			}
+			for property in obj.get_property_list():
+				items['properties'].append(property['name'])
+			for zignal in obj.get_signal_list():
+				items['signals'].append(zignal['name'])
+			for method in obj.get_method_list():
+				items['methods'].append(method['name'])
+			return items
+		_:
+			return obj
+
+func pprint(obj):
+	## pretty print
+	return JSON.stringify(obj, '  ')
 
 func eval_label(label:String):
 	## load a script into memory just to get the Type/Enum/whatever

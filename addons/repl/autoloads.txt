@@ -1,0 +1,6 @@
+# A list of files to be loaded into the REPL environment on startup.
+# These classes can override built-in classes for Godot.
+# Place each file on its own line.
+# Make sure to give your script a `class_name` so it can be resolved
+# For example, uncommenting this line will load the script at startup:
+#res://path/to/my/class_file.gd

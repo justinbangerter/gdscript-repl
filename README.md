@@ -5,6 +5,7 @@
 A Godot plugin that provides a tab in the Godot editor, which enables interactive code execution.
 
 ![Image with example output from terminal](docs/example-1.png)
+![Image with example output from terminal](docs/example-2.png)
 
 ## Usage
 * Type commands into the bar then click `Evaluate` or tap the `enter` key

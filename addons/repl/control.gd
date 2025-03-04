@@ -74,7 +74,7 @@ func shift_input_stack(input:LineEdit, stack:Array[String], direction:int) -> vo
 
 func _on_input_line_edit_gui_input(event):
 	if event is InputEventKey:
-		if event.pressed and event.keycode == KEY_ENTER:
+		if event.pressed and (event.keycode == KEY_ENTER or event.keycode == KEY_KP_ENTER):
 			get_viewport().set_input_as_handled()
 			evaluate_from_input()
 		elif event.pressed and event.keycode == KEY_TAB:

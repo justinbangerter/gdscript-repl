@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://bnllwfc06vsae"]
 
-[ext_resource type="Script" path="res://addons/repl/control.gd" id="1_33vy6"]
+[ext_resource type="Script" uid="uid://dsfxkpsry6d7q" path="res://addons/repl/control.gd" id="1_33vy6"]
 
 [node name="Control" type="Control"]
 custom_minimum_size = Vector2(0, 200)

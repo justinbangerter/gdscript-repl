@@ -184,6 +184,20 @@ var evaluate_params = [
 		],
 		[false, true]
 	],
+	# concatenate string with triple string
+	[
+		[
+			'var test = """a"""',
+			'test + "b"'
+		],
+		[false, 'ab']
+	],
+	[
+		[
+			'Vector2.UP'
+		],
+		[false, Vector2.UP]
+	]
 	# TODO: multiline triple strings in repl
 	#[
 		#[
@@ -312,14 +326,6 @@ var evaluate_params = [
 		#]
 		#[true, 'var test already declared)']
 	#],
-	# TODO: Expression.evaluate() doesn't return triple quoted strings as strings >.>
-	#[
-		#[
-			#'var test = """a"""',
-			#'test + "b"'
-		#],
-		#[false, 'ab']
-	#]
 	# TODO: crash if a new variable is assigned without var
 	#[
 		#[

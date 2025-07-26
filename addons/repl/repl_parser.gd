@@ -147,33 +147,34 @@ func delegate_evaluation(command: String, env: ReplEnv):
 	return [false, result]
 
 func build_expressions(tokens:Array) -> Array:
+	## Currently only handles one liners
+	## However, var assignments become two operations: declaration and assignment
 	var mode = EvalMode.OPEN
 	var expressions:Array[ReplExpression] = []
 	while tokens.size() > 0:
-		var token = tokens.pop_front()
 		if mode == EvalMode.OPEN:
-			if token.content in '\t \r\n':
-				continue
-			elif token.content == 'var':
+			if tokens[0].content in '\t \r\n':
+				tokens.pop_front()
+			elif tokens[0].content == 'var':
 				mode = EvalMode.DECLARE_VAR
-			elif tokens.size() > 0 and assignment_operators.has(tokens[0].content):
+				tokens.pop_front()
+			elif tokens.size() > 1 and assignment_operators.has(tokens[1].content):
 				mode = EvalMode.ASSIGN_VAR
-				tokens.push_front(token)
-			elif tokens.size() > 0 and tokens[0].content == '[':
-				# dictionary key stuff. assignment or access?
+			elif tokens.size() > 1 and tokens[1].content == '[':
+				# dictionary key or array. assignment or access?
 				var tokens_left := []
 				var tokens_right := []
 				var assignment:ReplToken
-				for _token in tokens:
-					if assignment_operators.has(_token.content):
+				for token in tokens:
+					if assignment_operators.has(token.content):
 						if assignment == null:
-							assignment = _token
+							assignment = token
 						else:
 							return [true, "Multiple assignments in expression"]
 					elif assignment:
-						tokens_right.append(_token)
+						tokens_right.append(token)
 					else:
-						tokens_left.append(_token)
+						tokens_left.append(token)
 						
 				if assignment != null:
 					# pull the key from the id first, in case this is nested
@@ -184,16 +185,15 @@ func build_expressions(tokens:Array) -> Array:
 					tokens_left.pop_back()
 					var brackets := 1
 					while len(tokens_left) > 0 and brackets > 0:
-						var _token = tokens_left.pop_back()
-						if _token.content == ']':
+						var token = tokens_left.pop_back()
+						if token.content == ']':
 							brackets += 1
-						elif _token.content == '[':
+						elif token.content == '[':
 							brackets -= 1
 						if brackets > 0:  # we don't care about the opening bracket
-							key_tokens.append(_token)
+							key_tokens.append(token)
 					
 					var id_tokens = tokens_left
-					id_tokens.push_front(token)
 					
 					expressions.append(
 						ReplExpression.REAssignment.new(
@@ -208,30 +208,22 @@ func build_expressions(tokens:Array) -> Array:
 					break
 				else:
 					# delegate and return the whole thing
-					tokens.push_front(token)
 					expressions.append(ReplExpression.REDelegated.new(tokens))
 					tokens = []
 			else:
 				# delegate and return the whole thing
-				tokens.push_front(token)
 				expressions.append(ReplExpression.REDelegated.new(tokens))
 				tokens = []
 		elif mode == EvalMode.DECLARE_VAR:
-			expressions.append(ReplExpression.REDeclaration.new(token.content))
-			if len(tokens) == 0:
+			expressions.append(ReplExpression.REDeclaration.new(tokens[0].content))
+			if len(tokens) == 1:
 				continue
 			mode = EvalMode.ASSIGN_VAR
-			tokens.push_front(token)
 		elif mode == EvalMode.ASSIGN_VAR:
-			var varname = token.content
+			var varname = tokens.pop_front().content
 			var operator = tokens.pop_front()
 			if tokens.size() == 0:
 				return [true, 'Missing right side of assignment expression']
-			#if eval_result[0]:
-				#return [true, "Failed to evaluate expression: {expression}\n  Error: {error}".format({
-					#'expression': expression,
-					#'error': eval_result[0],
-				#})]
 			expressions.append(
 				ReplExpression.REAssignment.new(
 					ReplPreAssign.new(varname),

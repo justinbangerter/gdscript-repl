@@ -188,16 +188,24 @@ var evaluate_params = [
 	[
 		[
 			'var test = """a"""',
-			'test + "b"'
+			'test + "b"',
 		],
 		[false, 'ab']
 	],
 	[
 		[
-			'Vector2.UP'
+			'var b = 1',
+			'var a = b = 2',
 		],
-		[false, Vector2.UP]
+		[true, "failed to parse:\nExpected \'=\'"]
 	]
+	## Issue 14 - Evalute basic types
+	#[
+		#[
+			#'Vector2.UP'
+		#],
+		#[false, Vector2.UP]
+	#]
 	# TODO: multiline triple strings in repl
 	#[
 		#[
@@ -342,5 +350,7 @@ func test_evaluate(params=use_parameters(evaluate_params)):
 	var expected_output = params[1]
 	var output = [false, 'no action']
 	for input in inputs:
+		if output[0]:
+			assert_eq_deep(output, expected_output)
 		output = parser.evaluate(input, env)
 	assert_eq_deep(output, expected_output)

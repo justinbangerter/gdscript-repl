@@ -145,25 +145,10 @@ func delegate_evaluation(command: String, env: ReplEnv):
 	if expression.has_execute_failed():
 		return [true, 'failed to execute:\n' + expression.get_error_text()]
 	return [false, result]
-	
 
-func evaluate(command: String, env:ReplEnv) -> Array:
-	if command == '':
-		return [false, '']
-	
-	var expressions:Array[ReplExpression]
-	var tokenizer = ReplTokenizer.new()
-	var tokenize_result = tokenizer.tokenize(command)
-	if tokenize_result[0]:  # return error
-		return tokenize_result
-		
+func build_expressions(tokens:Array) -> Array:
 	var mode = EvalMode.OPEN
-	var tokens = tokenize_result[1]
-	if len(tokens) and tokens[0].content == '/' and tokens[1].content == 'help':
-		var help = ReplHelp.new()
-		return help.help(tokens)
-	# workaround: see https://github.com/godotengine/godot/issues/98481
-	tokenizer.replace_triple_strings(tokens)
+	var expressions:Array[ReplExpression] = []
 	while tokens.size() > 0:
 		var token = tokens.pop_front()
 		if mode == EvalMode.OPEN:
@@ -181,9 +166,11 @@ func evaluate(command: String, env:ReplEnv) -> Array:
 				var assignment:ReplToken
 				for _token in tokens:
 					if assignment_operators.has(_token.content):
-						assignment = _token
-						continue
-					if assignment:
+						if assignment == null:
+							assignment = _token
+						else:
+							return [true, "Multiple assignments in expression"]
+					elif assignment:
 						tokens_right.append(_token)
 					else:
 						tokens_left.append(_token)
@@ -254,9 +241,31 @@ func evaluate(command: String, env:ReplEnv) -> Array:
 			)
 			# no support for multiline statements yet
 			break
+			
+	return [false, expressions]
+
+func evaluate(command: String, env:ReplEnv) -> Array:
+	if command == '':
+		return [false, '']
+	
+	var tokenizer = ReplTokenizer.new()
+	var tokenize_result = tokenizer.tokenize(command)
+	if tokenize_result[0]:  # return error
+		return tokenize_result
+		
+	var tokens = tokenize_result[1]
+	if len(tokens) and tokens[0].content == '/' and tokens[1].content == 'help':
+		var help = ReplHelp.new()
+		return help.help(tokens)
+	# workaround: see https://github.com/godotengine/godot/issues/98481
+	tokenizer.replace_triple_strings(tokens)
+	
+	var expression_result = build_expressions(tokens)
+	if expression_result[0] != false:
+		return expression_result
 	
 	var last_result = [false, '']
-	for expression in expressions:
+	for expression in expression_result[1]:
 		if last_result[0]:  # propagate errors
 			return last_result
 		last_result = expression.evaluate(env)

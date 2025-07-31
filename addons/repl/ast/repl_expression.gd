@@ -40,6 +40,32 @@ class REDelegated extends ReplExpression:
 			strs.append(token.content)
 		return strs
 
+class REDictionaryAccess extends ReplExpression:
+	# Assign to anything like identifier[key]
+	# id needs to be an expression in case it is a nested dict lookup
+	#  for example: x[0][1] = 2
+	var id_expression:ReplExpression
+	var key_expression:ReplExpression
+	func _init(id_expression:ReplExpression, key_expression:ReplExpression):
+		self.id_expression = id_expression
+		self.key_expression = key_expression
+	
+	func evaluate(env:ReplEnv):
+		# propagate errors
+		var id_result = self.id_expression.evaluate(env)
+		if id_result[0]:
+			return id_result
+		var id_value = id_result[1]
+			
+		var key_result = self.key_expression.evaluate(env)
+		if key_result[0]:
+			return key_result
+		var key_value = key_result[1]
+			
+		if key_value in id_value:
+			return [false, id_value[key_value]]
+		else:
+			return [true, "Invalid access with key `%s`" % key_value]
 
 class REAssignment extends ReplExpression:
 	var left:ReplPreAssign

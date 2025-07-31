@@ -188,6 +188,10 @@ func delegate_evaluation(command: String, env: ReplEnv):
 		return [true, 'failed to execute:\n' + expression.get_error_text()]
 	return [false, result]
 
+func build_statement(tokens:Array) -> ReplExpression:
+	## A statement is an expression without an assignment that can be evaluated
+	return ReplExpression.REDelegated.new(tokens)
+
 func build_expressions(tokens:Array) -> Array:
 	## Currently only handles one liners
 	## However, var assignments become two operations: declaration and assignment
@@ -217,44 +221,48 @@ func build_expressions(tokens:Array) -> Array:
 						tokens_right.append(token)
 					else:
 						tokens_left.append(token)
+				
+				# loop backwards
+				# pull the key from the id first, in case this is nested
+				#  for example x[0][test[1]] = 2
+				#  The key would be test[1]
+				#  The id would be x[0]
+				var key_tokens := []
+				tokens_left.pop_back()
+				var brackets := 1
+				while len(tokens_left) > 0 and brackets > 0:
+					var token = tokens_left.pop_back()
+					if token.content == ']':
+						brackets += 1
+					elif token.content == '[':
+						brackets -= 1
+					if brackets > 0:  # we don't care about the opening bracket
+						key_tokens.push_front(token)
 						
+				var id_tokens = tokens_left
+				
 				if assignment != null:
-					# pull the key from the id first, in case this is nested
-					#  for example x[0][test[1]] = 2
-					#  The key would be test[1]
-					#  The id would be x[0]
-					var key_tokens := []
-					tokens_left.pop_back()
-					var brackets := 1
-					while len(tokens_left) > 0 and brackets > 0:
-						var token = tokens_left.pop_back()
-						if token.content == ']':
-							brackets += 1
-						elif token.content == '[':
-							brackets -= 1
-						if brackets > 0:  # we don't care about the opening bracket
-							key_tokens.append(token)
-					
-					var id_tokens = tokens_left
-					
 					expressions.append(
 						ReplExpression.REAssignment.new(
 							ReplPreAssign.DictionaryPreAssign.new(
-								ReplExpression.REDelegated.new(id_tokens),
-								ReplExpression.REDelegated.new(key_tokens),
+								build_statement(id_tokens),
+								build_statement(key_tokens),
 							),
 							assignment.ttype,
-							ReplExpression.REDelegated.new(tokens_right)
+							build_statement(tokens_right)
 						)
 					)
 					break
 				else:
-					# delegate and return the whole thing
-					expressions.append(ReplExpression.REDelegated.new(tokens))
-					tokens = []
+					expressions.append(
+						ReplExpression.REDictionaryAccess.new(
+							build_statement(id_tokens),
+							build_statement(key_tokens),
+						)
+					)
+					break
 			else:
-				# delegate and return the whole thing
-				expressions.append(ReplExpression.REDelegated.new(tokens))
+				expressions.append(build_statement(tokens))
 				tokens = []
 		elif mode == EvalMode.DECLARE_VAR:
 			expressions.append(ReplExpression.REDeclaration.new(tokens[0].content))
@@ -270,7 +278,7 @@ func build_expressions(tokens:Array) -> Array:
 				ReplExpression.REAssignment.new(
 					ReplPreAssign.new(varname),
 					operator.ttype,
-					ReplExpression.REDelegated.new(tokens)
+					build_statement(tokens)
 				)
 			)
 			# no support for multiline statements yet

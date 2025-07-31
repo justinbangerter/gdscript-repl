@@ -198,7 +198,14 @@ var evaluate_params = [
 			'var a = b = 2',
 		],
 		[true, "failed to parse:\nExpected \'=\'"]
-	]
+	],
+	[
+		[
+			'var x = "test"',
+			'x["asdf"]',
+		],
+		[true, "Invalid access with key `asdf`"],
+	],
 	## Issue 14 - Evalute basic types
 	#[
 		#[
